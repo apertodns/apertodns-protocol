@@ -191,15 +191,15 @@ Components:
 - environment: "live" | "test"
 - random: 32 characters, base64url encoded, cryptographically secure
 
-Example: apt_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG
+Example: apertodns_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG
 ```
 
 ### 5.2 Authentication Methods
 
 | Method | Header | Use Case |
 |--------|--------|----------|
-| Bearer Token | `Authorization: Bearer apt_xxx` | Modern API (preferred) |
-| API Key Header | `X-API-Key: apt_xxx` | Alternative for limited clients |
+| Bearer Token | `Authorization: Bearer apertodns_xxx` | Modern API (preferred) |
+| API Key Header | `X-API-Key: apertodns_xxx` | Alternative for limited clients |
 | Basic Auth | `Authorization: Basic base64(user:token)` | Legacy /nic/update ONLY |
 
 ### 5.3 Token Permissions
@@ -273,7 +273,7 @@ GET /.well-known/apertodns/v1/info
   },
   "authentication": {
     "methods": ["bearer_token", "api_key_header", "basic_auth_legacy"],
-    "token_prefix": "apt_",
+    "token_prefix": "apertodns_",
     "token_header": "Authorization: Bearer {token}",
     "api_key_header": "X-API-Key: {token}"
   },
@@ -292,7 +292,7 @@ POST /.well-known/apertodns/v1/update
 ```http
 POST /.well-known/apertodns/v1/update HTTP/1.1
 Host: api.apertodns.com
-Authorization: Bearer apt_live_xxxxxxxxxxxxxxxxxx
+Authorization: Bearer apertodns_live_xxxxxxxxxxxxxxxxxx
 Content-Type: application/json
 Accept: application/json
 User-Agent: MyClient/1.0.0
@@ -540,7 +540,7 @@ POST /.well-known/apertodns/v1/tokens
   "status": "success",
   "data": {
     "id": "tok_xxxxxxxxxxxxxxxx",
-    "token": "apt_live_xxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "token": "apertodns_live_xxxxxxxxxxxxxxxxxxxxxxxxxx",
     "name": "Home Router",
     "permissions": ["update", "read"],
     "allowed_hostnames": ["host1.apertodns.com", "host2.apertodns.com"],

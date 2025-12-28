@@ -165,7 +165,7 @@ function verifySignature(payload, signature, secret, timestamp) {
   "method": "POST",
   "path": "/.well-known/apertodns/v1/update",
   "token_id": "tok_xxx",
-  "token_hint": "apt_live_xxxx...xxxx",
+  "token_hint": "apertodns_live_xxxx...xxxx",
   "response_status": 200,
   "response_time_ms": 45
 }

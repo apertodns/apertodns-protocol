@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest';
 
 const BASE_URL = process.env.APERTODNS_TEST_URL || 'https://api.apertodns.com';
-const TEST_TOKEN = process.env.APERTODNS_TEST_TOKEN || 'apt_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+const TEST_TOKEN = process.env.APERTODNS_TEST_TOKEN || 'apertodns_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 
 describe('Authentication - Bearer Token', () => {
   describe('Valid Token', () => {
@@ -146,14 +146,14 @@ describe('Authentication - Basic Auth (Legacy)', () => {
 
 describe('Token Format Validation', () => {
   const validTokenPatterns = [
-    'apt_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG',
-    'apt_test_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG',
+    'apertodns_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG',
+    'apertodns_test_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG',
   ];
 
   const invalidTokenPatterns = [
     'apt_prod_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG', // Invalid environment
-    'apt_live_short', // Too short
-    'apt_live_', // Missing random part
+    'apertodns_live_short', // Too short
+    'apertodns_live_', // Missing random part
     'wrong_prefix_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG', // Wrong prefix
     '', // Empty
   ];

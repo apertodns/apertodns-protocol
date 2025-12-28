@@ -100,7 +100,7 @@ curl -u "user:token" "https://api.apertodns.com/nic/update?hostname=myhost.apert
 
 # New (Modern API)
 curl -X POST "https://api.apertodns.com/.well-known/apertodns/v1/update" \
-  -H "Authorization: Bearer apt_live_xxx" \
+  -H "Authorization: Bearer apertodns_live_xxx" \
   -H "Content-Type: application/json" \
   -d '{"hostname": "myhost.apertodns.com", "ipv4": "auto"}'
 ```

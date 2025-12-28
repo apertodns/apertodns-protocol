@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest';
 
 const BASE_URL = process.env.APERTODNS_TEST_URL || 'https://api.apertodns.com';
-const TEST_TOKEN = process.env.APERTODNS_TEST_TOKEN || 'apt_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+const TEST_TOKEN = process.env.APERTODNS_TEST_TOKEN || 'apertodns_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 
 describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () => {
   describe('Request Validation', () => {
