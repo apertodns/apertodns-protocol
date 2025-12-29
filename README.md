@@ -13,7 +13,8 @@ The ApertoDNS Protocol is an open standard that provides:
 - **Full DynDNS2 compatibility** for legacy clients (routers, ddclient, etc.)
 - **Native IPv6 support** alongside IPv4
 - **Webhook notifications** for IP change events
-- **GDPR compliance** with data export and deletion endpoints
+- **Health check** and **domain listing** endpoints
+- **GDPR compliance** (provider-specific, not part of protocol)
 - **Security first** design with TLS 1.2+ requirement
 
 ## Documentation
