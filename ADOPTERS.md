@@ -1,69 +1,39 @@
-# ApertoDNS Protocol Adopters
+# ApertoDNS Adopters
 
-This page lists providers and projects that have adopted the ApertoDNS Protocol.
+Projects and integrations implementing or using the ApertoDNS Protocol.
 
-## How to Join
+## Official Integrations
 
-To be listed as an adopter:
+| Platform | Type | Repository | Package/Hub |
+|----------|------|------------|-------------|
+| **Home Assistant** | Add-on (5 packages) | [homeassistant-addon](https://github.com/apertodns/homeassistant-addon) | - |
+| **Synology NAS** | DDNS Provider | [synology-ddns](https://github.com/apertodns/synology-ddns) | - |
+| **Docker** | Container | [apertodns-docker](https://github.com/apertodns/apertodns-docker) | [Docker Hub](https://hub.docker.com/search?q=apertodns) |
 
-1. Implement the protocol (at minimum Layer 0, 1, and 2)
-2. Pass the compliance test suite
-3. Submit a pull request adding your organization to this file
+## Official Libraries & Packages
+
+| Platform | Type | Repository | Package |
+|----------|------|------------|---------|
+| **Node.js/TypeScript** | Client Library | [apertodns-client](https://github.com/apertodns/apertodns-client) | [npm](https://www.npmjs.com/package/apertodns-client) |
+| **Node.js** | Core Package | - | [npm](https://www.npmjs.com/package/apertodns) |
+
+## Protocol Specification
+
+| Resource | Description | Link |
+|----------|-------------|------|
+| **ApertoDNS Protocol** | Open standard specification v1.2 | [GitHub](https://github.com/apertodns/apertodns-protocol) |
 
 ## Reference Implementation
 
-| Provider | Website | Status | Notes |
-|----------|---------|--------|-------|
-| **ApertoDNS** | [apertodns.com](https://apertodns.com) | Production | Reference implementation, full protocol |
+| Provider | Status | Website |
+|----------|--------|---------|
+| **ApertoDNS** | Production | [apertodns.com](https://apertodns.com) |
 
-## Certified Adopters
+## Add Your Implementation
 
-*Coming soon - be the first to adopt!*
+If you've implemented the ApertoDNS Protocol, submit a PR to be listed here!
 
-## Compatible Clients
-
-| Client | Type | Protocol Support | Repository |
-|--------|------|------------------|------------|
-| apertodns-client | npm package | Full v1.0 | [npm](https://www.npmjs.com/package/apertodns-client) |
-| ddclient | CLI | Legacy (DynDNS2) | [github](https://github.com/ddclient/ddclient) |
-| OpenWRT ddns-scripts | Router firmware | Legacy (DynDNS2) | [openwrt.org](https://openwrt.org/docs/guide-user/services/ddns/client) |
-
-## Integrations
-
-| Platform | Type | Status | Documentation |
-|----------|------|--------|---------------|
-| Home Assistant | HACS Integration | Available | [HACS](https://hacs.xyz) |
-| Docker | Container | Available | [Docker Hub](https://hub.docker.com/r/apertodns/updater) |
-| OpenWRT | Packages | Approved | [OpenWRT Packages](https://github.com/openwrt/packages) |
-
-## Compliance Badges
-
-Adopters passing the compliance test suite may display:
-
-```markdown
-[![ApertoDNS Protocol v1.0](https://img.shields.io/badge/ApertoDNS_Protocol-v1.0-blue)](https://apertodns.com/protocol)
-```
-
-[![ApertoDNS Protocol v1.0](https://img.shields.io/badge/ApertoDNS_Protocol-v1.0-blue)](https://apertodns.com/protocol)
-
-## Compliance Levels
-
-| Level | Requirements |
-|-------|--------------|
-| **Basic** | Layer 0 + Layer 1 (Legacy DynDNS2) |
-| **Standard** | Layer 0 + Layer 1 + Layer 2 (Modern API) |
-| **Full** | All layers including Layer 3 (Extended Features) |
-
----
-
-## Contact
-
-For questions about adopting the protocol:
-
-- **Email:** protocol@apertodns.com
-- **Documentation:** https://apertodns.com/docs/protocol
-- **GitHub:** https://github.com/apertodns/protocol
-
----
-
-*Last updated: 2025-01-01*
+Requirements:
+1. Implement at least Layers 0-2 of the protocol
+2. Pass the [compliance tests](./tests/)
+3. Provide documentation link
