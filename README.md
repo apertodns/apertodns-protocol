@@ -71,6 +71,10 @@ const result = await client.update({
 
 Contributions are welcome! Please read the protocol specification before proposing changes.
 
+## Note on Terminology
+
+This protocol maintains compatibility with the DynDNS2 protocol (`/nic/update`), which is a de facto industry standard used by routers, NAS devices, and DDNS clients worldwide. DynDNS® is a registered trademark of Oracle Corporation. ApertoDNS is not affiliated with Oracle or Dyn.
+
 ## License
 
 MIT License - Copyright (c) 2025 Andrea Ferro
