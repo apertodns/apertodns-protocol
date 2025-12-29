@@ -5,6 +5,58 @@ All notable changes to the ApertoDNS Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-12-29
+
+### Added
+
+- **API Keys Management** - Modern scope-based credentials
+  - `GET /.well-known/apertodns/v1/api-keys` - List API keys
+  - `POST /.well-known/apertodns/v1/api-keys` - Create API key
+  - `DELETE /.well-known/apertodns/v1/api-keys/{id}` - Delete API key
+  - Granular scopes: domains, tokens, records, webhooks, dyndns, profile, custom-domains, credentials
+
+- **Token Management** - Legacy domain-bound tokens
+  - `GET /.well-known/apertodns/v1/tokens` - List tokens
+  - `POST /.well-known/apertodns/v1/tokens` - Create token
+  - `POST /.well-known/apertodns/v1/tokens/{id}/regenerate` - Regenerate token
+  - `DELETE /.well-known/apertodns/v1/tokens/{id}` - Delete token
+
+- **Webhook Management** - Full CRUD operations
+  - `GET /.well-known/apertodns/v1/webhooks` - List webhooks
+  - `POST /.well-known/apertodns/v1/webhooks` - Create webhook
+  - `PATCH /.well-known/apertodns/v1/webhooks/{id}` - Update webhook
+  - `DELETE /.well-known/apertodns/v1/webhooks/{id}` - Delete webhook
+
+- **New Error Codes**
+  - `invalid_json` (400) - Invalid JSON in request body
+  - `method_not_allowed` (405) - HTTP method not allowed on endpoint
+  - `invalid_token` (401) - Invalid or expired token
+
+### Security
+
+- Token/key values shown only once at creation time
+- GET endpoints never expose full credentials (only prefix)
+- Ownership verification on all DELETE operations
+- JSON error responses (no stack traces exposed)
+
+---
+
+## [1.1.0] - 2025-12-28
+
+### Added
+
+- **Custom Domains Support**
+  - AWS Route53 integration
+  - Cloudflare DNS integration
+  - Automatic provider detection and routing
+
+- **Bulk Update Endpoint**
+  - `POST /.well-known/apertodns/v1/bulk-update`
+  - Up to 100 hostnames per request
+  - Partial success handling (HTTP 207)
+
+---
+
 ## [1.0.0] - 2025-01-01
 
 ### Added

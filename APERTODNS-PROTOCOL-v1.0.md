@@ -1,9 +1,9 @@
 # ApertoDNS Protocol Specification v1.0
 
-**Version:** 1.0.0
+**Version:** 1.2.0
 **Status:** Stable
 **Author:** Andrea Ferro <support@apertodns.com>
-**Last Updated:** 2025-01-01
+**Last Updated:** 2025-12-29
 **License:** MIT
 
 ---
@@ -122,12 +122,28 @@ Example: `https://api.apertodns.com`
 ```
 MODERN ENDPOINTS:
 /.well-known/apertodns/v1/
-├── info                    # Discovery (public, no auth)
-├── update                  # Single host update (POST)
-├── bulk-update             # Multiple hosts (POST)
-├── status/{hostname}       # Check status (GET)
-├── webhooks                # Webhook management
-├── tokens                  # Token management
+├── info                           # Discovery (public, no auth)
+├── update                         # Single host update (POST)
+├── bulk-update                    # Multiple hosts (POST)
+├── status/{hostname}              # Check status (GET)
+│
+├── api-keys                       # API Keys management (v1.2)
+│   ├── GET                        # List API keys
+│   ├── POST                       # Create API key
+│   └── DELETE /{id}               # Delete API key
+│
+├── tokens                         # Token management (v1.2)
+│   ├── GET                        # List tokens
+│   ├── POST                       # Create token
+│   ├── POST /{id}/regenerate      # Regenerate token
+│   └── DELETE /{id}               # Delete token
+│
+├── webhooks                       # Webhook management (v1.2)
+│   ├── GET                        # List webhooks
+│   ├── POST                       # Create webhook
+│   ├── PATCH /{id}                # Update webhook
+│   └── DELETE /{id}               # Delete webhook
+│
 └── account
     ├── export              # GDPR data export
     └── (DELETE)            # GDPR account deletion
@@ -513,7 +529,148 @@ GET /.well-known/apertodns/v1/status/{hostname}
 }
 ```
 
-### 6.6 Token Management
+### 6.6 API Keys Management (v1.2)
+
+API Keys are modern, scope-based credentials with granular permissions.
+
+#### List API Keys
+
+```
+GET /.well-known/apertodns/v1/api-keys
+```
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 123,
+      "name": "My Script",
+      "keyPrefix": "apertodns_live_wP0V...",
+      "scopes": ["domains:read", "dyndns:update"],
+      "rateLimit": 1000,
+      "expiresAt": null,
+      "active": true,
+      "createdAt": "2025-12-29T12:00:00.000Z",
+      "lastUsedAt": "2025-12-29T14:30:00.000Z"
+    }
+  ]
+}
+```
+
+**Security:** Full key is NEVER returned in list responses. Only `keyPrefix` (first 20 characters) is shown.
+
+#### Create API Key
+
+```
+POST /.well-known/apertodns/v1/api-keys
+```
+
+**Request:**
+
+```json
+{
+  "name": "My Script",
+  "scopes": ["domains:read", "dyndns:update"],
+  "expiresIn": "30d"
+}
+```
+
+**Available Scopes:**
+
+| Scope | Description |
+|-------|-------------|
+| `domains:read` | Read domain information |
+| `domains:write` | Create/update domains |
+| `domains:delete` | Delete domains |
+| `tokens:read` | List tokens |
+| `tokens:write` | Create tokens |
+| `tokens:delete` | Delete tokens |
+| `records:read` | Read DNS records |
+| `records:write` | Update DNS records |
+| `webhooks:read` | List webhooks |
+| `webhooks:write` | Create/update webhooks |
+| `dyndns:update` | Update IP addresses |
+| `profile:read` | Read user profile |
+| `custom-domains:read` | Read custom domains |
+| `custom-domains:write` | Manage custom domains |
+| `credentials:read` | Read provider credentials |
+| `credentials:write` | Manage provider credentials |
+
+**Response 201 Created:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 123,
+    "name": "My Script",
+    "key": "apertodns_live_wP0VqR8nK3mXyZ1234567890",
+    "keyPrefix": "apertodns_live_wP0Vq",
+    "scopes": ["domains:read", "dyndns:update"],
+    "rateLimit": 1000,
+    "expiresAt": "2026-01-28T12:00:00.000Z",
+    "createdAt": "2025-12-29T12:00:00.000Z"
+  },
+  "warning": "Save this key now. It will not be shown again."
+}
+```
+
+**Critical:** The complete `key` is shown ONLY in this response. Save it immediately.
+
+#### Delete API Key
+
+```
+DELETE /.well-known/apertodns/v1/api-keys/{id}
+```
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 123,
+    "deleted": true
+  }
+}
+```
+
+---
+
+### 6.7 Token Management (v1.2)
+
+Tokens are legacy, domain-bound credentials for DynDNS compatibility.
+
+#### List Tokens
+
+```
+GET /.well-known/apertodns/v1/tokens
+```
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 31,
+      "label": "Home Router",
+      "domainId": 48,
+      "domainName": "myhost.apertodns.com",
+      "expiresAt": null,
+      "revoked": false,
+      "active": true,
+      "createdAt": "2025-12-28T20:16:37.503Z"
+    }
+  ]
+}
+```
+
+**Security:** Token hash is NEVER returned. Tokens are domain-bound.
 
 #### Create Token
 
@@ -525,11 +682,9 @@ POST /.well-known/apertodns/v1/tokens
 
 ```json
 {
-  "name": "Home Router",
-  "permissions": ["update", "read"],
-  "allowed_hostnames": ["host1.apertodns.com", "host2.apertodns.com"],
-  "allowed_ips": ["203.0.113.0/24", "2001:db8::/32"],
-  "expires_at": "2025-12-31T23:59:59Z"
+  "domainId": 48,
+  "label": "Home Router",
+  "expiresIn": "365d"
 }
 ```
 
@@ -537,32 +692,186 @@ POST /.well-known/apertodns/v1/tokens
 
 ```json
 {
-  "status": "success",
+  "success": true,
   "data": {
-    "id": "tok_xxxxxxxxxxxxxxxx",
-    "token": "apertodns_live_xxxxxxxxxxxxxxxxxxxxxxxxxx",
-    "name": "Home Router",
-    "permissions": ["update", "read"],
-    "allowed_hostnames": ["host1.apertodns.com", "host2.apertodns.com"],
-    "allowed_ips": ["203.0.113.0/24"],
-    "expires_at": "2025-12-31T23:59:59Z",
-    "created_at": "2025-01-01T12:00:00.000Z"
-  }
+    "id": 32,
+    "token": "7c4d3f55c63e04d4d3681bb2f89bdc826e95954cc0c3cf2820ba5de95f4e157d",
+    "label": "Home Router",
+    "domainId": 48,
+    "domainName": "myhost.apertodns.com",
+    "expiresAt": null,
+    "createdAt": "2025-12-29T12:00:00.000Z"
+  },
+  "warning": "Save this token now. It will not be shown again."
 }
 ```
 
-**Warning:** The complete token is shown ONLY in this response. Save it immediately.
-
-#### List Tokens
+#### Regenerate Token
 
 ```
-GET /.well-known/apertodns/v1/tokens
+POST /.well-known/apertodns/v1/tokens/{id}/regenerate
+```
+
+Generates a new token value, invalidating the previous one.
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 32,
+    "token": "444a9bbc2022cc7582bc1cd910c6e7304789f3b2232aff754f2be4ac2b10c4a8",
+    "domainName": "myhost.apertodns.com"
+  },
+  "warning": "Save this token now. The old token is now invalid."
+}
 ```
 
 #### Delete Token
 
 ```
 DELETE /.well-known/apertodns/v1/tokens/{id}
+```
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 32,
+    "deleted": true
+  }
+}
+```
+
+---
+
+### 6.8 Webhook Management (v1.2)
+
+#### List Webhooks
+
+```
+GET /.well-known/apertodns/v1/webhooks
+```
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 22,
+      "url": "https://example.com/webhook",
+      "events": ["ip_change", "domain_create"],
+      "domainId": null,
+      "domainName": null,
+      "active": true,
+      "lastCalled": "2025-12-29T10:00:00.000Z",
+      "lastStatus": 200,
+      "failCount": 0,
+      "createdAt": "2025-12-28T17:42:11.816Z",
+      "updatedAt": "2025-12-29T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+#### Create Webhook
+
+```
+POST /.well-known/apertodns/v1/webhooks
+```
+
+**Request:**
+
+```json
+{
+  "url": "https://example.com/webhook",
+  "events": ["ip_change", "domain_create"],
+  "secret": "my-hmac-secret-minimum-32-chars",
+  "domainId": null
+}
+```
+
+**Available Events:**
+
+| Event | Description |
+|-------|-------------|
+| `ip_change` | IP address was updated |
+| `domain_create` | New domain created |
+| `domain_delete` | Domain was deleted |
+| `update_failed` | Update operation failed |
+
+**Response 201 Created:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 23,
+    "url": "https://example.com/webhook",
+    "events": ["ip_change", "domain_create"],
+    "domainId": null,
+    "domainName": null,
+    "active": true,
+    "createdAt": "2025-12-29T14:45:08.995Z"
+  }
+}
+```
+
+**Security:** The `secret` is never returned in responses.
+
+#### Update Webhook
+
+```
+PATCH /.well-known/apertodns/v1/webhooks/{id}
+```
+
+**Request:**
+
+```json
+{
+  "active": false,
+  "events": ["ip_change"]
+}
+```
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 23,
+    "url": "https://example.com/webhook",
+    "events": ["ip_change"],
+    "domainId": null,
+    "domainName": null,
+    "active": false,
+    "updatedAt": "2025-12-29T14:50:00.000Z"
+  }
+}
+```
+
+#### Delete Webhook
+
+```
+DELETE /.well-known/apertodns/v1/webhooks/{id}
+```
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 23,
+    "deleted": true
+  }
+}
 ```
 
 ---
@@ -598,17 +907,21 @@ DELETE /.well-known/apertodns/v1/tokens/{id}
 | `unauthorized` | 401 | Token missing or invalid |
 | `token_expired` | 401 | Token has expired |
 | `token_revoked` | 401 | Token was revoked |
+| `invalid_token` | 401 | Invalid or expired token |
 | `forbidden` | 403 | Insufficient permissions |
 | `hostname_forbidden` | 403 | Token not authorized for hostname |
 | `ip_forbidden` | 403 | IP not in allowlist |
 | `invalid_request` | 400 | Malformed request |
+| `invalid_json` | 400 | Invalid JSON in request body |
 | `validation_error` | 400 | Validation failed |
 | `invalid_hostname` | 400 | Invalid hostname format |
 | `invalid_ip` | 400 | Invalid or private IP |
 | `invalid_ttl` | 400 | TTL out of range |
+| `not_found` | 404 | Resource not found |
 | `hostname_not_found` | 404 | Hostname does not exist |
 | `token_not_found` | 404 | Token does not exist |
 | `webhook_not_found` | 404 | Webhook does not exist |
+| `method_not_allowed` | 405 | HTTP method not allowed on endpoint |
 | `hostname_exists` | 409 | Hostname already registered |
 | `rate_limited` | 429 | Too many requests |
 | `payload_too_large` | 413 | Request body exceeds limit |
@@ -998,6 +1311,8 @@ function legacyResponse(result) {
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.2.0 | 2025-12-29 | Added Management endpoints (API Keys, Tokens, Webhooks), new error codes |
+| 1.1.0 | 2025-12-28 | Added Custom Domains support (Route53, Cloudflare), Bulk Update |
 | 1.0.0 | 2025-01-01 | Initial stable release |
 
 ---
