@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `GET /.well-known/apertodns/v1/api-keys` - List API keys
   - `POST /.well-known/apertodns/v1/api-keys` - Create API key
   - `DELETE /.well-known/apertodns/v1/api-keys/{id}` - Delete API key
-  - Granular scopes: domains, tokens, records, webhooks, dyndns, profile, custom-domains, credentials
+  - Granular scopes: domains, tokens, records, webhooks, dns, profile, custom-domains, credentials
 
 - **Token Management** - Legacy domain-bound tokens
   - `GET /.well-known/apertodns/v1/tokens` - List tokens

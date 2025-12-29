@@ -1,4 +1,4 @@
-# ApertoDNS Protocol Specification v1.0
+# ApertoDNS Protocol Specification v1.2
 
 **Version:** 1.2.0
 **Status:** Stable

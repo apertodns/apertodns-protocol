@@ -1,7 +1,7 @@
 # ApertoDNS Protocol
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Protocol Version](https://img.shields.io/badge/Protocol-v1.0-green.svg)](./APERTODNS-PROTOCOL-v1.0.md)
+[![Protocol Version](https://img.shields.io/badge/Protocol-v1.2-green.svg)](./APERTODNS-PROTOCOL-v1.0.md)
 
 Open standard for Dynamic DNS services.
 
@@ -18,7 +18,7 @@ The ApertoDNS Protocol is an open standard that provides:
 
 ## Documentation
 
-- [Protocol Specification v1.0](./APERTODNS-PROTOCOL-v1.0.md) - Complete protocol specification
+- [Protocol Specification v1.2](./APERTODNS-PROTOCOL-v1.0.md) - Complete protocol specification
 - [Security Policy](./SECURITY.md) - Security requirements and vulnerability reporting
 - [Changelog](./CHANGELOG.md) - Version history
 - [Adopters](./ADOPTERS.md) - Providers implementing this protocol
