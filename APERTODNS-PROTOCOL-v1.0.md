@@ -194,9 +194,8 @@ MODERN ENDPOINTS:
 │   ├── PATCH /{id}                # Update webhook
 │   └── DELETE /{id}               # Delete webhook
 │
-└── account
-    ├── export              # GDPR data export
-    └── (DELETE)            # GDPR account deletion
+└── domains                       # List user domains (v1.2.1)
+    └── GET                       # List all domains
 
 LEGACY ENDPOINT:
 /nic/update                 # DynDNS2 compatible (GET)
@@ -1303,57 +1302,24 @@ function verifyWebhookSignature(payload, signature, secret, timestamp) {
 
 ## 11. GDPR Compliance
 
-### 11.1 Data Export (Article 20)
+GDPR endpoints are **provider-specific** and NOT part of the ApertoDNS Protocol standard.
+Each provider implementing the ApertoDNS Protocol SHOULD provide GDPR compliance through
+their own API endpoints, outside the `/.well-known/apertodns/v1/` namespace.
 
-```
-POST /.well-known/apertodns/v1/account/export
-```
+### 11.1 Requirements
 
-**Response 202 Accepted:**
+Providers MUST:
+- Provide data export functionality (Article 20 - Data Portability)
+- Provide account deletion functionality (Article 17 - Right to Erasure)
+- Document their GDPR endpoints in their own API documentation
 
-```json
-{
-  "status": "accepted",
-  "data": {
-    "export_id": "exp_xxxxxxxx",
-    "status": "processing",
-    "estimated_completion": "2024-12-28T16:00:00.000Z",
-    "notification_email": "user@example.com"
-  }
-}
-```
+### 11.2 Reference Implementation (ApertoDNS)
 
-### 11.2 Account Deletion (Article 17)
+ApertoDNS implements GDPR compliance at:
+- `GET /api/export` - Data export (Article 20)
+- `POST /api/delete-account` - Account deletion (Article 17)
 
-```
-DELETE /.well-known/apertodns/v1/account
-```
-
-**Request:**
-
-```json
-{
-  "confirm": "DELETE_MY_ACCOUNT",
-  "reason": "optional feedback"
-}
-```
-
-**Response 200 OK:**
-
-```json
-{
-  "status": "success",
-  "data": {
-    "deleted_at": "2025-01-01T12:00:00.000Z",
-    "data_retention_end": "2025-01-01T12:00:00.000Z",
-    "items_deleted": {
-      "hostnames": 5,
-      "tokens": 3,
-      "webhooks": 2
-    }
-  }
-}
-```
+These endpoints are specific to ApertoDNS and not part of the protocol standard
 
 ---
 
