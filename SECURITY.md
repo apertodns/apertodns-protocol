@@ -2,19 +2,29 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
+| Version | Supported |
+|---------|-----------|
+| v1.2.x  | ✅ Yes    |
+| v1.1.x  | ✅ Yes    |
+| < v1.1  | ❌ No     |
 
 ## Reporting a Vulnerability
 
 We take security seriously. If you discover a security vulnerability in the ApertoDNS Protocol specification or reference implementation, please report it responsibly.
 
-### How to Report
+### Contact
 
-**Email:** security@apertodns.com
+- **Email:** [security@apertodns.com](mailto:security@apertodns.com)
+- **GitHub:** [Security Advisories](https://github.com/apertodns/apertodns-protocol/security/advisories)
+- **Security.txt:** [https://www.apertodns.com/.well-known/security.txt](https://www.apertodns.com/.well-known/security.txt)
 
-**PGP Key:** Available at https://apertodns.com/.well-known/security.txt
+### PGP Encryption
+
+For sensitive reports, please encrypt your message using our PGP key:
+
+- **Key:** [https://www.apertodns.com/.well-known/pgp-key.txt](https://www.apertodns.com/.well-known/pgp-key.txt)
+- **Keyserver:** [keys.openpgp.org](https://keys.openpgp.org/search?q=security%40apertodns.com)
+- **Fingerprint:** `A65E 8CE4 5488 EEB9 5795 7B8E F7DB 6A1B 1CAA B9C0`
 
 ### What to Include
 
@@ -237,6 +247,6 @@ Cache-Control: no-store, no-cache, must-revalidate, private
 
 ---
 
-**Last Updated:** 2025-01-01
+**Last Updated:** 2025-12-29
 
 **Author:** Andrea Ferro <support@apertodns.com>
