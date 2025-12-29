@@ -33,6 +33,56 @@ The ApertoDNS Protocol is an open standard for Dynamic DNS (DDNS) services that 
 
 ---
 
+## Quick Start
+
+### 1. Get your API Key
+
+1. Login su [apertodns.com](https://apertodns.com)
+2. Vai su **Dashboard** → **API Keys**
+3. Clicca **"Crea nuova API Key"**
+4. Scegli nome e scopes (es. `dns:update`, `domains:read`)
+5. **IMPORTANTE:** Copia e salva la key immediatamente - non sarà più visibile!
+
+La key ha formato: `apertodns_live_XXXXXXXXXXXXXXXX`
+
+### 2. Update your IP
+
+```bash
+curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/update \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"hostname":"myhost.apertodns.com","ipv4":"auto"}'
+```
+
+**Response (success):**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "hostname": "myhost.apertodns.com",
+    "ipv4": "203.0.113.50",
+    "changed": true
+  }
+}
+```
+
+### 3. Check status
+
+```bash
+curl https://api.apertodns.com/.well-known/apertodns/v1/status/myhost.apertodns.com \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
+```
+
+### 4. Legacy DynDNS2 (for routers)
+
+```bash
+curl -u "username:YOUR_TOKEN" \
+  "https://api.apertodns.com/nic/update?hostname=myhost.apertodns.com&myip=auto"
+```
+
+---
+
 ## 1. Introduction
 
 ### 1.1 Purpose
@@ -247,6 +297,12 @@ GET /.well-known/apertodns/v1/info
 ```
 
 **Authentication:** None (public)
+
+**curl Example:**
+
+```bash
+curl https://api.apertodns.com/.well-known/apertodns/v1/info
+```
 
 **Response 200 OK:**
 
@@ -539,6 +595,13 @@ API Keys are modern, scope-based credentials with granular permissions.
 GET /.well-known/apertodns/v1/api-keys
 ```
 
+**curl Example:**
+
+```bash
+curl https://api.apertodns.com/.well-known/apertodns/v1/api-keys \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
+```
+
 **Response 200 OK:**
 
 ```json
@@ -549,7 +612,7 @@ GET /.well-known/apertodns/v1/api-keys
       "id": 123,
       "name": "My Script",
       "keyPrefix": "apertodns_live_wP0V...",
-      "scopes": ["domains:read", "dyndns:update"],
+      "scopes": ["domains:read", "dns:update"],
       "rateLimit": 1000,
       "expiresAt": null,
       "active": true,
@@ -568,12 +631,21 @@ GET /.well-known/apertodns/v1/api-keys
 POST /.well-known/apertodns/v1/api-keys
 ```
 
+**curl Example:**
+
+```bash
+curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/api-keys \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"My Script","scopes":["domains:read","dns:update"],"expiresIn":"30d"}'
+```
+
 **Request:**
 
 ```json
 {
   "name": "My Script",
-  "scopes": ["domains:read", "dyndns:update"],
+  "scopes": ["domains:read", "dns:update"],
   "expiresIn": "30d"
 }
 ```
@@ -592,12 +664,14 @@ POST /.well-known/apertodns/v1/api-keys
 | `records:write` | Update DNS records |
 | `webhooks:read` | List webhooks |
 | `webhooks:write` | Create/update webhooks |
-| `dyndns:update` | Update IP addresses |
+| `dns:update` | Update IP addresses |
 | `profile:read` | Read user profile |
 | `custom-domains:read` | Read custom domains |
 | `custom-domains:write` | Manage custom domains |
+| `custom-domains:delete` | Delete custom domains |
 | `credentials:read` | Read provider credentials |
 | `credentials:write` | Manage provider credentials |
+| `credentials:delete` | Delete provider credentials |
 
 **Response 201 Created:**
 
@@ -609,7 +683,7 @@ POST /.well-known/apertodns/v1/api-keys
     "name": "My Script",
     "key": "apertodns_live_wP0VqR8nK3mXyZ1234567890",
     "keyPrefix": "apertodns_live_wP0Vq",
-    "scopes": ["domains:read", "dyndns:update"],
+    "scopes": ["domains:read", "dns:update"],
     "rateLimit": 1000,
     "expiresAt": "2026-01-28T12:00:00.000Z",
     "createdAt": "2025-12-29T12:00:00.000Z"
@@ -624,6 +698,13 @@ POST /.well-known/apertodns/v1/api-keys
 
 ```
 DELETE /.well-known/apertodns/v1/api-keys/{id}
+```
+
+**curl Example:**
+
+```bash
+curl -X DELETE https://api.apertodns.com/.well-known/apertodns/v1/api-keys/123 \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
 ```
 
 **Response 200 OK:**
@@ -648,6 +729,13 @@ Tokens are legacy, domain-bound credentials for DynDNS compatibility.
 
 ```
 GET /.well-known/apertodns/v1/tokens
+```
+
+**curl Example:**
+
+```bash
+curl https://api.apertodns.com/.well-known/apertodns/v1/tokens \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
 ```
 
 **Response 200 OK:**
@@ -676,6 +764,15 @@ GET /.well-known/apertodns/v1/tokens
 
 ```
 POST /.well-known/apertodns/v1/tokens
+```
+
+**curl Example:**
+
+```bash
+curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/tokens \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"domainId":48,"label":"Home Router","expiresIn":"365d"}'
 ```
 
 **Request:**
@@ -714,6 +811,13 @@ POST /.well-known/apertodns/v1/tokens/{id}/regenerate
 
 Generates a new token value, invalidating the previous one.
 
+**curl Example:**
+
+```bash
+curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/tokens/32/regenerate \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
+```
+
 **Response 200 OK:**
 
 ```json
@@ -732,6 +836,13 @@ Generates a new token value, invalidating the previous one.
 
 ```
 DELETE /.well-known/apertodns/v1/tokens/{id}
+```
+
+**curl Example:**
+
+```bash
+curl -X DELETE https://api.apertodns.com/.well-known/apertodns/v1/tokens/32 \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
 ```
 
 **Response 200 OK:**
@@ -754,6 +865,13 @@ DELETE /.well-known/apertodns/v1/tokens/{id}
 
 ```
 GET /.well-known/apertodns/v1/webhooks
+```
+
+**curl Example:**
+
+```bash
+curl https://api.apertodns.com/.well-known/apertodns/v1/webhooks \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
 ```
 
 **Response 200 OK:**
@@ -783,6 +901,15 @@ GET /.well-known/apertodns/v1/webhooks
 
 ```
 POST /.well-known/apertodns/v1/webhooks
+```
+
+**curl Example:**
+
+```bash
+curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/webhooks \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com/webhook","events":["ip_change"],"secret":"my-32-char-minimum-secret-here!!"}'
 ```
 
 **Request:**
@@ -830,6 +957,15 @@ POST /.well-known/apertodns/v1/webhooks
 PATCH /.well-known/apertodns/v1/webhooks/{id}
 ```
 
+**curl Example:**
+
+```bash
+curl -X PATCH https://api.apertodns.com/.well-known/apertodns/v1/webhooks/23 \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"active":false}'
+```
+
 **Request:**
 
 ```json
@@ -860,6 +996,13 @@ PATCH /.well-known/apertodns/v1/webhooks/{id}
 
 ```
 DELETE /.well-known/apertodns/v1/webhooks/{id}
+```
+
+**curl Example:**
+
+```bash
+curl -X DELETE https://api.apertodns.com/.well-known/apertodns/v1/webhooks/23 \
+  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
 ```
 
 **Response 200 OK:**
@@ -959,6 +1102,24 @@ DELETE /.well-known/apertodns/v1/webhooks/{id}
   }
 }
 ```
+
+### 7.4 Common Errors Quick Reference
+
+| Error | HTTP | Cause | Solution |
+|-------|------|-------|----------|
+| `unauthorized` | 401 | Token missing | Add header `Authorization: Bearer YOUR_KEY` |
+| `invalid_token` | 401 | Token expired/invalid | Generate new API key from dashboard |
+| `forbidden` | 403 | Insufficient permissions | Check token scopes match required operation |
+| `hostname_not_found` | 404 | Hostname doesn't exist | Verify hostname in dashboard or create it first |
+| `not_found` | 404 | Resource not found | Check resource ID exists and you own it |
+| `invalid_ip` | 400 | Private IP (192.168.x, 10.x) | Use public IP or `"ipv4":"auto"` |
+| `invalid_hostname` | 400 | Bad hostname format | Use valid FQDN (e.g., `host.apertodns.com`) |
+| `invalid_ttl` | 400 | TTL out of range | Use TTL between 60 and 86400 seconds |
+| `invalid_json` | 400 | Malformed JSON body | Check JSON syntax, quotes, brackets |
+| `rate_limited` | 429 | Too many requests | Wait 60 seconds (max 60 req/min for updates) |
+| `bulk_limit_exceeded` | 400 | Too many hosts in bulk | Max 10 hostnames per bulk request |
+| `method_not_allowed` | 405 | Wrong HTTP method | Check endpoint docs for correct method |
+| `server_error` | 500 | Internal error | Retry later, contact support if persists |
 
 ---
 
