@@ -35,23 +35,26 @@ The ApertoDNS Protocol is an open standard for Dynamic DNS (DDNS) services that 
 
 ## Quick Start
 
-### 1. Get your API Key
+### 1. Obtain API Credentials
 
-1. Login su [apertodns.com](https://apertodns.com)
-2. Vai su **Dashboard** → **API Keys**
-3. Clicca **"Crea nuova API Key"**
-4. Scegli nome e scopes (es. `dns:update`, `domains:read`)
-5. **IMPORTANTE:** Copia e salva la key immediatamente - non sarà più visibile!
+Contact your DDNS provider or access their dashboard to:
+- Create a new API Key with required scopes (e.g., `dns:update`, `domains:read`)
+- Save the key immediately - it may not be shown again
+- Key format: `{provider}_{environment}_{random}`
 
-La key ha formato: `apertodns_live_XXXXXXXXXXXXXXXX`
-
-### 2. Update your IP
+### 2. Test Connection
 
 ```bash
-curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/update \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY" \
+curl -X GET "https://api.{provider-domain}/.well-known/apertodns/v1/health"
+```
+
+### 3. Update DNS
+
+```bash
+curl -X POST "https://api.{provider-domain}/.well-known/apertodns/v1/update" \
+  -H "Authorization: Bearer {your_token}" \
   -H "Content-Type: application/json" \
-  -d '{"hostname":"myhost.apertodns.com","ipv4":"auto"}'
+  -d '{"hostname": "myhost.{provider-domain}", "ipv4": "auto"}'
 ```
 
 **Response (success):**
@@ -60,26 +63,28 @@ curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/update \
 {
   "status": "success",
   "data": {
-    "hostname": "myhost.apertodns.com",
+    "hostname": "myhost.example.com",
     "ipv4": "203.0.113.50",
     "changed": true
   }
 }
 ```
 
-### 3. Check status
+### 4. Check Status
 
 ```bash
-curl https://api.apertodns.com/.well-known/apertodns/v1/status/myhost.apertodns.com \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
+curl "https://api.{provider-domain}/.well-known/apertodns/v1/status/myhost.{provider-domain}" \
+  -H "Authorization: Bearer {your_token}"
 ```
 
-### 4. Legacy DynDNS2 (for routers)
+### 5. Legacy DynDNS2 (for routers)
 
 ```bash
-curl -u "username:YOUR_TOKEN" \
-  "https://api.apertodns.com/nic/update?hostname=myhost.apertodns.com&myip=auto"
+curl -u "username:{your_token}" \
+  "https://api.{provider-domain}/nic/update?hostname=myhost.{provider-domain}&myip=auto"
 ```
+
+> **Note:** Replace `{provider-domain}` and `{your_token}` with values from your DDNS provider.
 
 ---
 
