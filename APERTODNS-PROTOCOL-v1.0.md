@@ -249,7 +249,7 @@ Cache-Control: no-store, no-cache, must-revalidate, private
 ### 5.1 Token Format
 
 ```
-Format: apt_{environment}_{random}
+Format: apertodns_{environment}_{random}
 
 Components:
 - apt: Fixed prefix (identifies ApertoDNS tokens)
@@ -1399,7 +1399,7 @@ const crypto = require('crypto');
 
 function generateToken(environment = 'live') {
   const random = crypto.randomBytes(24).toString('base64url');
-  return `apt_${environment}_${random}`;
+  return `apertodns_${environment}_${random}`;
 }
 ```
 

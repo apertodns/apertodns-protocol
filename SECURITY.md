@@ -72,7 +72,7 @@ While we don't have a formal bug bounty program, we recognize security researche
 ### Token Format
 
 ```
-apt_{environment}_{random}
+apertodns_{environment}_{random}
 
 - apt: Fixed prefix
 - environment: "live" or "test"
