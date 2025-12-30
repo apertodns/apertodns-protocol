@@ -1,0 +1,568 @@
+openapi: 3.0.3
+info:
+  title: ApertoDNS Protocol
+  description: |
+    Open standard protocol for Dynamic DNS services.
+
+    This specification defines a modern, secure, and provider-agnostic API for dynamic DNS updates.
+
+    **Reference Implementation:** [ApertoDNS](https://apertodns.com)
+
+    **Protocol Specification:** [GitHub](https://github.com/apertodns/apertodns-protocol)
+  version: 1.2.0
+  contact:
+    name: ApertoDNS
+    url: https://apertodns.com
+    email: support@apertodns.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+externalDocs:
+  description: Full Protocol Specification
+  url: https://github.com/apertodns/apertodns-protocol/blob/main/APERTODNS-PROTOCOL-v1.0.md
+
+servers:
+  - url: https://api.apertodns.com
+    description: ApertoDNS Reference Implementation
+  - url: https://api.{provider}.com
+    description: Other providers implementing this protocol
+    variables:
+      provider:
+        default: example
+        description: Provider domain
+
+tags:
+  - name: Discovery
+    description: Public endpoints for service discovery
+  - name: Updates
+    description: DNS record update operations
+  - name: Status
+    description: Query DNS record status
+  - name: Legacy
+    description: DynDNS2 compatibility endpoint
+
+paths:
+  /.well-known/apertodns/v1/info:
+    get:
+      tags:
+        - Discovery
+      summary: Service Discovery
+      description: |
+        Returns provider information, capabilities, endpoints, and authentication methods.
+        This endpoint is public and requires no authentication.
+      operationId: getInfo
+      responses:
+        "200":
+          description: Provider information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InfoResponse"
+              example:
+                success: true
+                data:
+                  protocol: apertodns
+                  protocol_version: "1.2.0"
+                  provider:
+                    name: ApertoDNS
+                    website: https://apertodns.com
+                  capabilities:
+                    ipv4: true
+                    ipv6: true
+                    bulk_update: true
+                  authentication:
+                    methods:
+                      - bearer_token
+                      - api_key_header
+                    token_format: "{provider}_{environment}_{random}"
+
+  /.well-known/apertodns/v1/health:
+    get:
+      tags:
+        - Discovery
+      summary: Health Check
+      description: Returns service health status and uptime.
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                success: true
+                data:
+                  status: healthy
+                  uptime: 99.99
+                  timestamp: "2025-01-01T12:00:00.000Z"
+
+  /.well-known/apertodns/v1/update:
+    post:
+      tags:
+        - Updates
+      summary: Update DNS Record
+      description: |
+        Updates a single DNS hostname with a new IP address.
+        Supports both IPv4 and IPv6. If no IP is provided, auto-detection is used.
+      operationId: updateRecord
+      security:
+        - bearerAuth: []
+        - apiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRequest"
+            example:
+              hostname: home.example.com
+              ip: 203.0.113.50
+              ttl: 300
+      responses:
+        "200":
+          description: Update successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateResponse"
+              example:
+                success: true
+                data:
+                  hostname: home.example.com
+                  ip: 203.0.113.50
+                  previous_ip: 203.0.113.49
+                  ttl: 300
+                  changed: true
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /.well-known/apertodns/v1/bulk-update:
+    post:
+      tags:
+        - Updates
+      summary: Bulk Update DNS Records
+      description: Updates multiple DNS hostnames in a single request.
+      operationId: bulkUpdateRecords
+      security:
+        - bearerAuth: []
+        - apiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkUpdateRequest"
+            example:
+              updates:
+                - hostname: home.example.com
+                  ip: 203.0.113.50
+                - hostname: office.example.com
+                  ip: 203.0.113.51
+      responses:
+        "200":
+          description: Bulk update results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkUpdateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /.well-known/apertodns/v1/status/{hostname}:
+    get:
+      tags:
+        - Status
+      summary: Get Hostname Status
+      description: Returns the current DNS record status for a hostname.
+      operationId: getStatus
+      security:
+        - bearerAuth: []
+        - apiKeyAuth: []
+      parameters:
+        - name: hostname
+          in: path
+          required: true
+          schema:
+            type: string
+          example: home.example.com
+      responses:
+        "200":
+          description: Hostname status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /.well-known/apertodns/v1/domains:
+    get:
+      tags:
+        - Status
+      summary: List Available Domains
+      description: Returns the list of domains available for the authenticated user.
+      operationId: getDomains
+      security:
+        - bearerAuth: []
+        - apiKeyAuth: []
+      responses:
+        "200":
+          description: List of domains
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DomainsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /nic/update:
+    get:
+      tags:
+        - Legacy
+      summary: DynDNS2 Compatible Update
+      description: |
+        Legacy endpoint compatible with DynDNS2 protocol.
+        Uses Basic Authentication and query parameters.
+      operationId: legacyUpdate
+      security:
+        - basicAuth: []
+      parameters:
+        - name: hostname
+          in: query
+          required: true
+          schema:
+            type: string
+          example: home.example.com
+        - name: myip
+          in: query
+          required: false
+          schema:
+            type: string
+          example: 203.0.113.50
+      responses:
+        "200":
+          description: Legacy response
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "good 203.0.113.50"
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "badauth"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        Bearer token authentication.
+        Token format: {provider}_{environment}_{random}
+        Example: apertodns_live_abc123xyz
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API Key passed in X-API-Key header
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Basic Authentication (legacy DynDNS2 compatibility)
+
+  schemas:
+    InfoResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            protocol:
+              type: string
+              example: apertodns
+            protocol_version:
+              type: string
+              example: "1.2.0"
+            provider:
+              type: object
+              properties:
+                name:
+                  type: string
+                website:
+                  type: string
+                documentation:
+                  type: string
+                support_email:
+                  type: string
+            endpoints:
+              type: object
+            capabilities:
+              type: object
+              properties:
+                ipv4:
+                  type: boolean
+                ipv6:
+                  type: boolean
+                auto_ip_detection:
+                  type: boolean
+                bulk_update:
+                  type: boolean
+                webhooks:
+                  type: boolean
+                max_bulk_size:
+                  type: integer
+            authentication:
+              type: object
+              properties:
+                methods:
+                  type: array
+                  items:
+                    type: string
+                token_format:
+                  type: string
+                  example: "{provider}_{environment}_{random}"
+            rate_limits:
+              type: object
+            server_time:
+              type: string
+              format: date-time
+
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              enum:
+                - healthy
+                - degraded
+                - unhealthy
+            uptime:
+              type: number
+            timestamp:
+              type: string
+              format: date-time
+
+    UpdateRequest:
+      type: object
+      required:
+        - hostname
+      properties:
+        hostname:
+          type: string
+          description: Fully qualified domain name
+          example: home.example.com
+        ip:
+          type: string
+          description: IPv4 or IPv6 address (auto-detected if omitted)
+          example: 203.0.113.50
+        ttl:
+          type: integer
+          description: Time to live in seconds
+          minimum: 60
+          maximum: 86400
+          default: 300
+
+    UpdateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            hostname:
+              type: string
+            ip:
+              type: string
+            previous_ip:
+              type: string
+            ttl:
+              type: integer
+            changed:
+              type: boolean
+            timestamp:
+              type: string
+              format: date-time
+
+    BulkUpdateRequest:
+      type: object
+      required:
+        - updates
+      properties:
+        updates:
+          type: array
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/UpdateRequest"
+
+    BulkUpdateResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            total:
+              type: integer
+            successful:
+              type: integer
+            failed:
+              type: integer
+            results:
+              type: array
+              items:
+                type: object
+
+    StatusResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            hostname:
+              type: string
+            current_ip:
+              type: string
+            ttl:
+              type: integer
+            last_updated:
+              type: string
+              format: date-time
+
+    DomainsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            domains:
+              type: array
+              items:
+                type: object
+                properties:
+                  domain:
+                    type: string
+                  hostnames:
+                    type: array
+                    items:
+                      type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            error:
+              code: INVALID_HOSTNAME
+              message: Invalid hostname format
+
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            error:
+              code: UNAUTHORIZED
+              message: Invalid or missing authentication token
+
+    Forbidden:
+      description: Not authorized for this hostname
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            error:
+              code: FORBIDDEN
+              message: You do not own this hostname
+
+    NotFound:
+      description: Hostname not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            error:
+              code: NOT_FOUND
+              message: Hostname not found
+
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            error:
+              code: RATE_LIMITED
+              message: Too many requests, please slow down
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retrying
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Request limit per window
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining requests in window
