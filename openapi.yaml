@@ -118,7 +118,7 @@ paths:
               $ref: "#/components/schemas/UpdateRequest"
             example:
               hostname: home.example.com
-              ip: 203.0.113.50
+              ipv4: 203.0.113.50
               ttl: 300
       responses:
         "200":
@@ -131,8 +131,8 @@ paths:
                 success: true
                 data:
                   hostname: home.example.com
-                  ip: 203.0.113.50
-                  previous_ip: 203.0.113.49
+                  ipv4: 203.0.113.50
+                  previous_ipv4: 203.0.113.49
                   ttl: 300
                   changed: true
         "400":
@@ -165,9 +165,9 @@ paths:
             example:
               updates:
                 - hostname: home.example.com
-                  ip: 203.0.113.50
+                  ipv4: 203.0.113.50
                 - hostname: office.example.com
-                  ip: 203.0.113.51
+                  ipv4: 203.0.113.51
       responses:
         "200":
           description: Bulk update results
@@ -378,10 +378,14 @@ components:
           type: string
           description: Fully qualified domain name
           example: home.example.com
-        ip:
+        ipv4:
           type: string
-          description: IPv4 or IPv6 address (auto-detected if omitted)
+          description: IPv4 address (use "auto" for auto-detection)
           example: 203.0.113.50
+        ipv6:
+          type: string
+          description: IPv6 address (use "auto" for auto-detection)
+          example: 2001:db8::1
         ttl:
           type: integer
           description: Time to live in seconds
@@ -399,10 +403,18 @@ components:
           properties:
             hostname:
               type: string
-            ip:
+            ipv4:
               type: string
-            previous_ip:
+              description: Current IPv4 address
+            previous_ipv4:
               type: string
+              description: Previous IPv4 address
+            ipv6:
+              type: string
+              description: Current IPv6 address
+            previous_ipv6:
+              type: string
+              description: Previous IPv6 address
             ttl:
               type: integer
             changed:
@@ -451,8 +463,12 @@ components:
           properties:
             hostname:
               type: string
-            current_ip:
+            ipv4:
               type: string
+              description: Current IPv4 address
+            ipv6:
+              type: string
+              description: Current IPv6 address
             ttl:
               type: integer
             last_updated:
