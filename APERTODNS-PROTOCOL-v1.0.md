@@ -249,14 +249,20 @@ Cache-Control: no-store, no-cache, must-revalidate, private
 ### 5.1 Token Format
 
 ```
-Format: apertodns_{environment}_{random}
+Format: {provider}_{environment}_{random}
 
 Components:
-- apt: Fixed prefix (identifies ApertoDNS tokens)
+- provider: Provider identifier (lowercase, 3-20 chars, alphanumeric and hyphens)
 - environment: "live" | "test"
 - random: 32 characters, base64url encoded, cryptographically secure
 
-Example: apertodns_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG
+Examples:
+- apertodns_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG (ApertoDNS)
+- desec_live_xK9mNpR2sT5vWxY8zA1bC4dE6fG7Hqj3 (deSEC)
+- duckdns_test_zA1bC4dE6fG7Hqj3kL9mNpR2sT5vWxY8 (DuckDNS)
+
+The token format is provider-agnostic, allowing any DDNS provider
+implementing this protocol to use their own identifier prefix.
 ```
 
 ### 5.2 Authentication Methods
@@ -344,7 +350,7 @@ curl https://api.apertodns.com/.well-known/apertodns/v1/info
   },
   "authentication": {
     "methods": ["bearer_token", "api_key_header", "basic_auth_legacy"],
-    "token_prefix": "apertodns_",
+    "token_format": "{provider}_{environment}_{random}",
     "token_header": "Authorization: Bearer {token}",
     "api_key_header": "X-API-Key: {token}"
   },
@@ -1397,10 +1403,13 @@ function validateHostname(hostname) {
 ```javascript
 const crypto = require('crypto');
 
-function generateToken(environment = 'live') {
+function generateToken(provider, environment = 'live') {
   const random = crypto.randomBytes(24).toString('base64url');
-  return `apertodns_${environment}_${random}`;
+  return `${provider}_${environment}_${random}`;
 }
+
+// Example: generateToken('apertodns', 'live')
+// Returns: apertodns_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG
 ```
 
 ### 13.3 Legacy Response Mapping

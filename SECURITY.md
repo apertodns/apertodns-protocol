@@ -72,11 +72,16 @@ While we don't have a formal bug bounty program, we recognize security researche
 ### Token Format
 
 ```
-apertodns_{environment}_{random}
+{provider}_{environment}_{random}
 
-- apt: Fixed prefix
+- provider: Provider identifier (lowercase, 3-20 chars, alphanumeric + hyphens)
 - environment: "live" or "test"
 - random: 32 chars base64url (192 bits)
+
+Examples:
+- apertodns_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG (ApertoDNS)
+- desec_live_xK9mNpR2sT5vWxY8zA1bC4dE6fG7Hqj3 (deSEC)
+- duckdns_test_zA1bC4dE6fG7Hqj3kL9mNpR2sT5vWxY8 (DuckDNS)
 ```
 
 ### Rate Limiting
