@@ -20,6 +20,7 @@ The ApertoDNS Protocol is an open standard that provides:
 ## Documentation
 
 - [Protocol Specification v1.2](./APERTODNS-PROTOCOL-v1.0.md) - Complete protocol specification
+- [OpenAPI Specification](./openapi.yaml) - OpenAPI 3.0.3 schema ([View in Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/apertodns/apertodns-protocol/main/openapi.yaml))
 - [Security Policy](./SECURITY.md) - Security requirements and vulnerability reporting
 - [Changelog](./CHANGELOG.md) - Version history
 - [Adopters](./ADOPTERS.md) - Providers implementing this protocol
