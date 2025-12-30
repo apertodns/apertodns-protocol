@@ -25,12 +25,12 @@ externalDocs:
 servers:
   - url: https://api.apertodns.com
     description: ApertoDNS Reference Implementation
-  - url: https://api.{provider}.com
+  - url: https://{provider-domain}
     description: Other providers implementing this protocol
     variables:
-      provider:
-        default: example
-        description: Provider domain
+      provider-domain:
+        default: api.example.com
+        description: Your DDNS provider API domain
 
 tags:
   - name: Discovery
