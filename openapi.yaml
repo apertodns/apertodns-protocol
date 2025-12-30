@@ -503,20 +503,33 @@ components:
           example:
             success: false
             error:
-              code: INVALID_HOSTNAME
+              code: invalid_hostname
               message: Invalid hostname format
 
     Unauthorized:
-      description: Missing or invalid authentication
+      description: |
+        Missing or invalid authentication. Possible error codes:
+        - `unauthorized`: No authentication token provided
+        - `invalid_token`: Token is invalid or expired
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
-          example:
-            success: false
-            error:
-              code: UNAUTHORIZED
-              message: Invalid or missing authentication token
+          examples:
+            missing_token:
+              summary: No token provided
+              value:
+                success: false
+                error:
+                  code: unauthorized
+                  message: Bearer token required
+            invalid_token:
+              summary: Invalid or expired token
+              value:
+                success: false
+                error:
+                  code: invalid_token
+                  message: Invalid or expired token
 
     Forbidden:
       description: Not authorized for this hostname
@@ -527,7 +540,7 @@ components:
           example:
             success: false
             error:
-              code: FORBIDDEN
+              code: forbidden
               message: You do not own this hostname
 
     NotFound:
@@ -539,7 +552,7 @@ components:
           example:
             success: false
             error:
-              code: NOT_FOUND
+              code: not_found
               message: Hostname not found
 
     RateLimited:
@@ -551,7 +564,7 @@ components:
           example:
             success: false
             error:
-              code: RATE_LIMITED
+              code: rate_limited
               message: Too many requests, please slow down
       headers:
         Retry-After:
