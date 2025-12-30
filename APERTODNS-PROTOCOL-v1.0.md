@@ -300,6 +300,8 @@ Tokens MAY be constrained by:
 
 ## 6. Endpoints
 
+> **Note:** The following examples use ApertoDNS (`api.apertodns.com`) as the reference implementation. Other providers implementing this protocol should replace the domain and token prefix with their own values.
+
 ### 6.1 Discovery Endpoint
 
 ```
