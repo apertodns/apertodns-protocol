@@ -53,6 +53,15 @@ The protocol uses well-known URIs (RFC 8615), JSON payloads
 (RFC 8259), and bearer token authentication (RFC 6750) to enable
 interoperable dynamic DNS services across different providers.
 
+
+# Note to Readers
+
+Discussion of this document takes place on the DNS Operations
+Working Group mailing list (dnsop@ietf.org).
+
+Source for this draft and an issue tracker can be found at
+https://github.com/apertodns/apertodns-protocol.
+
 --- middle
 
 # Introduction
