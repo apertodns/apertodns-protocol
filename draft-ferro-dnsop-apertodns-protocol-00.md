@@ -53,6 +53,7 @@ The protocol uses well-known URIs (RFC 8615), JSON payloads
 (RFC 8259), and bearer token authentication (RFC 6750) to enable
 interoperable dynamic DNS services across different providers.
 
+--- middle
 
 # Note to Readers
 
@@ -61,8 +62,6 @@ Working Group mailing list (dnsop@ietf.org).
 
 Source for this draft and an issue tracker can be found at
 https://github.com/apertodns/apertodns-protocol.
-
---- middle
 
 # Introduction
 
@@ -703,8 +702,8 @@ requirements apply as specified in {{RFC5891}}:
   convert them to A-labels internally
 - Servers MUST store and return hostnames in a consistent form
 
-For example, a client wishing to update the hostname "例え.example.com"
-SHOULD send the request with the A-label form "xn--r8jz45g.example.com".
+For example, a client wishing to update an IDN hostname (U-label form)
+SHOULD send the request with the A-label form (e.g., "xn--r8jz45g.example.com").
 
 Implementations that accept U-label input MUST perform IDNA2008
 validation as specified in {{RFC5891}} before processing the request.
