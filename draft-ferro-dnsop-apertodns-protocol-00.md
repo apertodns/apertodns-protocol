@@ -4,6 +4,7 @@ abbrev: "ApertoDNS Protocol"
 docname: draft-ferro-dnsop-apertodns-protocol-00
 category: std
 ipr: trust200902
+submissiontype: IETF
 area: Operations and Management
 workgroup: DNS Operations
 keyword:
@@ -222,7 +223,7 @@ DDNS functionality.
 Protected endpoints require authentication via one of the following
 methods:
 
-1. **Bearer Token** (RECOMMENDED): `Authorization: Bearer {token}`
+1. **Bearer Token** (RECOMMENDED) {{RFC6750}}: `Authorization: Bearer {token}`
 2. **API Key Header**: `X-API-Key: {token}`
 3. **HTTP Basic** (legacy only): `Authorization: Basic {credentials}`
 
