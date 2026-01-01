@@ -168,8 +168,10 @@ Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=
 Bearer tokens with granular scopes:
 
 ```http
-Authorization: Bearer apertodns_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG
+Authorization: Bearer {provider}_{environment}_{random}
 ```
+
+> Token format is provider-specific. See [Token Format](#token-format) section.
 
 - Scoped permissions (dns:update, domains:read, etc.)
 - Token expiration
@@ -227,7 +229,7 @@ ApertoDNS Protocol maintains full DynDNS2 compatibility:
 
 ```
 GET /nic/update?hostname=home.example.com&myip=1.2.3.4
-Authorization: Basic dXNlcm5hbWU6dG9rZW4=
+Authorization: Basic dXNlcjp0b2tlbg==
 ```
 
 Response:

@@ -471,7 +471,7 @@ GET /nic/update?hostname={hostname}&myip={ip}
 ```http
 GET /nic/update?hostname=home.example.com&myip=203.0.113.50 HTTP/1.1
 Host: api.apertodns.com
-Authorization: Basic dXNlcm5hbWU6dG9rZW4=
+Authorization: Basic dXNlcjp0b2tlbg==
 User-Agent: ddclient/3.9.1
 ```
 
