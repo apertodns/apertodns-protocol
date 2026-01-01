@@ -279,7 +279,7 @@ components:
       description: |
         Bearer token authentication.
         Token format: {provider}_{environment}_{random}
-        Example: apertodns_live_abc123xyz
+        Example: example_live_abc123xyz
     apiKeyAuth:
       type: apiKey
       in: header
