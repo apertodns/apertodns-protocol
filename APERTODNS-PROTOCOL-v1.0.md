@@ -274,9 +274,11 @@ implementing this protocol to use their own identifier prefix.
 
 | Method | Header | Use Case |
 |--------|--------|----------|
-| Bearer Token | `Authorization: Bearer apertodns_xxx` | Modern API (preferred) |
-| API Key Header | `X-API-Key: apertodns_xxx` | Alternative for limited clients |
+| Bearer Token | `Authorization: Bearer {token}` | Modern API (preferred) |
+| API Key Header | `X-API-Key: {token}` | Alternative for limited clients |
 | Basic Auth | `Authorization: Basic base64(user:token)` | Legacy /nic/update ONLY |
+
+> Token format: `{provider}_{environment}_{random}`. See [Token Format](#51-token-format) section.
 
 ### 5.3 Token Permissions
 
