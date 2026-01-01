@@ -99,7 +99,7 @@ describe('Authentication - Bearer Token', () => {
 
 describe('Authentication - API Key Header', () => {
   describe('X-API-Key Header', () => {
-    it.skipIf(!HAS_VALID_TOKEN)('SHOULD accept token via X-API-Key header', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MAY accept token via X-API-Key header', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/status/test.apertodns.com`, {
         headers: {
           'X-API-Key': TEST_TOKEN
