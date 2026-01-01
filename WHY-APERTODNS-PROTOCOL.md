@@ -294,6 +294,6 @@ The ApertoDNS Protocol is designed for adoption by any DDNS provider:
 
 **Author:** Andrea Ferro <support@apertodns.com>
 
-**Last Updated:** 2025-12-30
+**Last Updated:** 2026-01-01
 
 **License:** MIT
