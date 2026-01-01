@@ -54,7 +54,7 @@ curl -X GET "https://api.{provider-domain}/.well-known/apertodns/v1/health"
 curl -X POST "https://api.{provider-domain}/.well-known/apertodns/v1/update" \
   -H "Authorization: Bearer {your_token}" \
   -H "Content-Type: application/json" \
-  -d '{"hostname": "myhost.{provider-domain}", "ipv4": "auto"}'
+  -d '{"hostname": "home.example.com", "ipv4": "auto"}'
 ```
 
 **Response (success):**
@@ -63,7 +63,7 @@ curl -X POST "https://api.{provider-domain}/.well-known/apertodns/v1/update" \
 {
   "success": true,
   "data": {
-    "hostname": "myhost.example.com",
+    "hostname": "home.example.com",
     "ipv4": "203.0.113.50",
     "changed": true
   }
@@ -73,7 +73,7 @@ curl -X POST "https://api.{provider-domain}/.well-known/apertodns/v1/update" \
 ### 4. Check Status
 
 ```bash
-curl "https://api.{provider-domain}/.well-known/apertodns/v1/status/myhost.{provider-domain}" \
+curl "https://api.{provider-domain}/.well-known/apertodns/v1/status/home.example.com" \
   -H "Authorization: Bearer {your_token}"
 ```
 
@@ -81,7 +81,7 @@ curl "https://api.{provider-domain}/.well-known/apertodns/v1/status/myhost.{prov
 
 ```bash
 curl -u "user:{your_token}" \
-  "https://api.{provider-domain}/nic/update?hostname=myhost.{provider-domain}&myip=auto"
+  "https://api.{provider-domain}/nic/update?hostname=home.example.com&myip=auto"
 ```
 
 > **Note:** Replace `{provider-domain}` and `{your_token}` with values from your DDNS provider.
@@ -387,7 +387,7 @@ X-Request-ID: 550e8400-e29b-41d4-a716-446655440000
 
 ```json
 {
-  "hostname": "myhost.apertodns.com",
+  "hostname": "home.example.com",
   "ipv4": "auto",
   "ipv6": "auto",
   "ttl": 300
@@ -419,7 +419,7 @@ When `ipv4` or `ipv6` is set to `"auto"`:
 {
   "success": true,
   "data": {
-    "hostname": "myhost.apertodns.com",
+    "hostname": "home.example.com",
     "ipv4": "203.0.113.50",
     "ipv6": "2001:db8::1",
     "ipv4_previous": "203.0.113.49",
@@ -442,7 +442,7 @@ When `ipv4` or `ipv6` is set to `"auto"`:
 {
   "success": true,
   "data": {
-    "hostname": "myhost.apertodns.com",
+    "hostname": "home.example.com",
     "ipv4": "203.0.113.50",
     "ipv6": "2001:db8::1",
     "ipv4_previous": "203.0.113.50",
@@ -469,7 +469,7 @@ GET /nic/update?hostname={hostname}&myip={ip}
 **Request:**
 
 ```http
-GET /nic/update?hostname=myhost.apertodns.com&myip=203.0.113.50 HTTP/1.1
+GET /nic/update?hostname=home.example.com&myip=203.0.113.50 HTTP/1.1
 Host: api.apertodns.com
 Authorization: Basic dXNlcm5hbWU6dG9rZW4=
 User-Agent: ddclient/3.9.1
@@ -584,7 +584,7 @@ GET /.well-known/apertodns/v1/status/{hostname}
 {
   "success": true,
   "data": {
-    "hostname": "myhost.apertodns.com",
+    "hostname": "home.example.com",
     "ipv4": "203.0.113.50",
     "ipv6": "2001:db8::1",
     "ttl": 300,
@@ -760,7 +760,7 @@ curl https://api.apertodns.com/.well-known/apertodns/v1/tokens \
       "id": 31,
       "label": "Home Router",
       "domainId": 48,
-      "domainName": "myhost.apertodns.com",
+      "domainName": "home.example.com",
       "expiresAt": null,
       "revoked": false,
       "active": true,
@@ -807,7 +807,7 @@ curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/tokens \
     "token": "7c4d3f55c63e04d4d3681bb2f89bdc826e95954cc0c3cf2820ba5de95f4e157d",
     "label": "Home Router",
     "domainId": 48,
-    "domainName": "myhost.apertodns.com",
+    "domainName": "home.example.com",
     "expiresAt": null,
     "createdAt": "2025-12-29T12:00:00.000Z"
   },
@@ -838,7 +838,7 @@ curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/tokens/32/regene
   "data": {
     "id": 32,
     "token": "444a9bbc2022cc7582bc1cd910c6e7304789f3b2232aff754f2be4ac2b10c4a8",
-    "domainName": "myhost.apertodns.com"
+    "domainName": "home.example.com"
   },
   "warning": "Save this token now. The old token is now invalid."
 }
@@ -1225,7 +1225,7 @@ POST /.well-known/apertodns/v1/webhooks
 ```json
 {
   "name": "IP Change Notification",
-  "hostname": "myhost.apertodns.com",
+  "hostname": "home.example.com",
   "url": "https://my-server.com/webhook/ip-changed",
   "events": ["ip_changed"],
   "secret": "my-webhook-secret-minimum-32-characters-long",
@@ -1266,7 +1266,7 @@ X-ApertoDNS-Signature: sha256=xxxxxxxxxxxxxxxxxxxxxx
   "timestamp": "2025-01-01T12:00:00.000Z",
   "webhook_id": "wh_xxxxxxxxxxxxxxxx",
   "data": {
-    "hostname": "myhost.apertodns.com",
+    "hostname": "home.example.com",
     "ipv4_previous": "203.0.113.49",
     "ipv4_current": "203.0.113.50",
     "ipv6_previous": null,
