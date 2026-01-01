@@ -302,7 +302,7 @@ Tokens MAY be constrained by:
 
 ## 6. Endpoints
 
-> **Note:** The following examples use ApertoDNS (`api.apertodns.com`) as the reference implementation. Other providers implementing this protocol should replace the domain and token prefix with their own values.
+> **Note:** The following examples use `api.example.com` as a placeholder. Replace with your provider's API endpoint (e.g., `api.apertodns.com`, `desec.io`, etc.). Token format is `{provider}_{environment}_{random}` - see [Section 5.1](#51-token-format).
 
 ### 6.1 Discovery Endpoint
 
@@ -315,7 +315,7 @@ GET /.well-known/apertodns/v1/info
 **curl Example:**
 
 ```bash
-curl https://api.apertodns.com/.well-known/apertodns/v1/info
+curl https://api.example.com/.well-known/apertodns/v1/info
 ```
 
 **Response 200 OK:**
@@ -617,8 +617,8 @@ GET /.well-known/apertodns/v1/api-keys
 **curl Example:**
 
 ```bash
-curl https://api.apertodns.com/.well-known/apertodns/v1/api-keys \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
+curl https://api.example.com/.well-known/apertodns/v1/api-keys \
+  -H "Authorization: Bearer $YOUR_API_KEY"
 ```
 
 **Response 200 OK:**
@@ -653,8 +653,8 @@ POST /.well-known/apertodns/v1/api-keys
 **curl Example:**
 
 ```bash
-curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/api-keys \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY" \
+curl -X POST https://api.example.com/.well-known/apertodns/v1/api-keys \
+  -H "Authorization: Bearer $YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name":"My Script","scopes":["domains:read","dns:update"],"expiresIn":"30d"}'
 ```
@@ -722,8 +722,8 @@ DELETE /.well-known/apertodns/v1/api-keys/{id}
 **curl Example:**
 
 ```bash
-curl -X DELETE https://api.apertodns.com/.well-known/apertodns/v1/api-keys/123 \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
+curl -X DELETE https://api.example.com/.well-known/apertodns/v1/api-keys/123 \
+  -H "Authorization: Bearer $YOUR_API_KEY"
 ```
 
 **Response 200 OK:**
@@ -753,8 +753,8 @@ GET /.well-known/apertodns/v1/tokens
 **curl Example:**
 
 ```bash
-curl https://api.apertodns.com/.well-known/apertodns/v1/tokens \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
+curl https://api.example.com/.well-known/apertodns/v1/tokens \
+  -H "Authorization: Bearer $YOUR_API_KEY"
 ```
 
 **Response 200 OK:**
@@ -788,8 +788,8 @@ POST /.well-known/apertodns/v1/tokens
 **curl Example:**
 
 ```bash
-curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/tokens \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY" \
+curl -X POST https://api.example.com/.well-known/apertodns/v1/tokens \
+  -H "Authorization: Bearer $YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"domainId":48,"label":"Home Router","expiresIn":"365d"}'
 ```
@@ -833,8 +833,8 @@ Generates a new token value, invalidating the previous one.
 **curl Example:**
 
 ```bash
-curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/tokens/32/regenerate \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
+curl -X POST https://api.example.com/.well-known/apertodns/v1/tokens/32/regenerate \
+  -H "Authorization: Bearer $YOUR_API_KEY"
 ```
 
 **Response 200 OK:**
@@ -860,8 +860,8 @@ DELETE /.well-known/apertodns/v1/tokens/{id}
 **curl Example:**
 
 ```bash
-curl -X DELETE https://api.apertodns.com/.well-known/apertodns/v1/tokens/32 \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
+curl -X DELETE https://api.example.com/.well-known/apertodns/v1/tokens/32 \
+  -H "Authorization: Bearer $YOUR_API_KEY"
 ```
 
 **Response 200 OK:**
@@ -889,8 +889,8 @@ GET /.well-known/apertodns/v1/webhooks
 **curl Example:**
 
 ```bash
-curl https://api.apertodns.com/.well-known/apertodns/v1/webhooks \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
+curl https://api.example.com/.well-known/apertodns/v1/webhooks \
+  -H "Authorization: Bearer $YOUR_API_KEY"
 ```
 
 **Response 200 OK:**
@@ -925,8 +925,8 @@ POST /.well-known/apertodns/v1/webhooks
 **curl Example:**
 
 ```bash
-curl -X POST https://api.apertodns.com/.well-known/apertodns/v1/webhooks \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY" \
+curl -X POST https://api.example.com/.well-known/apertodns/v1/webhooks \
+  -H "Authorization: Bearer $YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com/webhook","events":["ip_change"],"secret":"my-32-char-minimum-secret-here!!"}'
 ```
@@ -979,8 +979,8 @@ PATCH /.well-known/apertodns/v1/webhooks/{id}
 **curl Example:**
 
 ```bash
-curl -X PATCH https://api.apertodns.com/.well-known/apertodns/v1/webhooks/23 \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY" \
+curl -X PATCH https://api.example.com/.well-known/apertodns/v1/webhooks/23 \
+  -H "Authorization: Bearer $YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"active":false}'
 ```
@@ -1020,8 +1020,8 @@ DELETE /.well-known/apertodns/v1/webhooks/{id}
 **curl Example:**
 
 ```bash
-curl -X DELETE https://api.apertodns.com/.well-known/apertodns/v1/webhooks/23 \
-  -H "Authorization: Bearer apertodns_live_YOUR_KEY"
+curl -X DELETE https://api.example.com/.well-known/apertodns/v1/webhooks/23 \
+  -H "Authorization: Bearer $YOUR_API_KEY"
 ```
 
 **Response 200 OK:**
