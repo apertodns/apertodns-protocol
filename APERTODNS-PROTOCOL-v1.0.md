@@ -61,7 +61,7 @@ curl -X POST "https://api.{provider-domain}/.well-known/apertodns/v1/update" \
 
 ```json
 {
-  "status": "success",
+  "success": true,
   "data": {
     "hostname": "myhost.example.com",
     "ipv4": "203.0.113.50",
@@ -417,7 +417,7 @@ When `ipv4` or `ipv6` is set to `"auto"`:
 
 ```json
 {
-  "status": "success",
+  "success": true,
   "data": {
     "hostname": "myhost.apertodns.com",
     "ipv4": "203.0.113.50",
@@ -440,7 +440,7 @@ When `ipv4` or `ipv6` is set to `"auto"`:
 
 ```json
 {
-  "status": "success",
+  "success": true,
   "data": {
     "hostname": "myhost.apertodns.com",
     "ipv4": "203.0.113.50",
@@ -544,13 +544,13 @@ POST /.well-known/apertodns/v1/bulk-update
 
 ```json
 {
-  "status": "success",
+  "success": true,
   "data": {
     "summary": { "total": 3, "successful": 3, "failed": 0 },
     "results": [
-      { "hostname": "host1.apertodns.com", "status": "success", "ipv4": "203.0.113.50", "changed": true },
-      { "hostname": "host2.apertodns.com", "status": "success", "ipv4": "203.0.113.100", "changed": true },
-      { "hostname": "host3.apertodns.com", "status": "success", "ipv4": "203.0.113.50", "changed": false }
+      { "hostname": "host1.apertodns.com", "success": true, "ipv4": "203.0.113.50", "changed": true },
+      { "hostname": "host2.apertodns.com", "success": true, "ipv4": "203.0.113.100", "changed": true },
+      { "hostname": "host3.apertodns.com", "success": true, "ipv4": "203.0.113.50", "changed": false }
     ]
   }
 }
@@ -560,13 +560,13 @@ POST /.well-known/apertodns/v1/bulk-update
 
 ```json
 {
-  "status": "partial_success",
+  "success": true,
   "data": {
     "summary": { "total": 3, "successful": 2, "failed": 1 },
     "results": [
-      { "hostname": "host1.apertodns.com", "status": "success", "ipv4": "203.0.113.50", "changed": true },
-      { "hostname": "invalid.example.com", "status": "error", "error": { "code": "hostname_not_found", "message": "Hostname not found" } },
-      { "hostname": "host3.apertodns.com", "status": "success", "ipv4": "203.0.113.50", "changed": false }
+      { "hostname": "host1.apertodns.com", "success": true, "ipv4": "203.0.113.50", "changed": true },
+      { "hostname": "invalid.example.com", "success": false, "error": { "code": "hostname_not_found", "message": "Hostname not found" } },
+      { "hostname": "host3.apertodns.com", "success": true, "ipv4": "203.0.113.50", "changed": false }
     ]
   }
 }
@@ -582,7 +582,7 @@ GET /.well-known/apertodns/v1/status/{hostname}
 
 ```json
 {
-  "status": "success",
+  "success": true,
   "data": {
     "hostname": "myhost.apertodns.com",
     "ipv4": "203.0.113.50",
@@ -1037,7 +1037,7 @@ curl -X DELETE https://api.apertodns.com/.well-known/apertodns/v1/webhooks/23 \
 
 ```json
 {
-  "status": "error",
+  "success": false,
   "error": {
     "code": "error_code",
     "message": "Human-readable message in English",
@@ -1090,7 +1090,7 @@ curl -X DELETE https://api.apertodns.com/.well-known/apertodns/v1/webhooks/23 \
 
 ```json
 {
-  "status": "error",
+  "success": false,
   "error": {
     "code": "validation_error",
     "message": "Request validation failed",
@@ -1163,7 +1163,7 @@ HTTP 429 with body:
 
 ```json
 {
-  "status": "error",
+  "success": false,
   "error": {
     "code": "rate_limited",
     "message": "Rate limit exceeded. Retry after 45 seconds.",
