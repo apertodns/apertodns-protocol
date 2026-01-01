@@ -523,9 +523,9 @@ POST /.well-known/apertodns/v1/bulk-update
 ```json
 {
   "updates": [
-    { "hostname": "host1.apertodns.com", "ipv4": "auto", "ipv6": "auto" },
-    { "hostname": "host2.apertodns.com", "ipv4": "203.0.113.100" },
-    { "hostname": "host3.apertodns.com", "ipv4": "auto", "ttl": 600 }
+    { "hostname": "host1.example.com", "ipv4": "auto", "ipv6": "auto" },
+    { "hostname": "host2.example.com", "ipv4": "203.0.113.100" },
+    { "hostname": "host3.example.com", "ipv4": "auto", "ttl": 600 }
   ],
   "defaults": {
     "ttl": 300,
@@ -548,9 +548,9 @@ POST /.well-known/apertodns/v1/bulk-update
   "data": {
     "summary": { "total": 3, "successful": 3, "failed": 0 },
     "results": [
-      { "hostname": "host1.apertodns.com", "success": true, "ipv4": "203.0.113.50", "changed": true },
-      { "hostname": "host2.apertodns.com", "success": true, "ipv4": "203.0.113.100", "changed": true },
-      { "hostname": "host3.apertodns.com", "success": true, "ipv4": "203.0.113.50", "changed": false }
+      { "hostname": "host1.example.com", "success": true, "ipv4": "203.0.113.50", "changed": true },
+      { "hostname": "host2.example.com", "success": true, "ipv4": "203.0.113.100", "changed": true },
+      { "hostname": "host3.example.com", "success": true, "ipv4": "203.0.113.50", "changed": false }
     ]
   }
 }
@@ -564,9 +564,9 @@ POST /.well-known/apertodns/v1/bulk-update
   "data": {
     "summary": { "total": 3, "successful": 2, "failed": 1 },
     "results": [
-      { "hostname": "host1.apertodns.com", "success": true, "ipv4": "203.0.113.50", "changed": true },
+      { "hostname": "host1.example.com", "success": true, "ipv4": "203.0.113.50", "changed": true },
       { "hostname": "invalid.example.com", "success": false, "error": { "code": "hostname_not_found", "message": "Hostname not found" } },
-      { "hostname": "host3.apertodns.com", "success": true, "ipv4": "203.0.113.50", "changed": false }
+      { "hostname": "host3.example.com", "success": true, "ipv4": "203.0.113.50", "changed": false }
     ]
   }
 }
@@ -1125,7 +1125,7 @@ curl -X DELETE https://api.apertodns.com/.well-known/apertodns/v1/webhooks/23 \
 | `hostname_not_found` | 404 | Hostname doesn't exist | Verify hostname in dashboard or create it first |
 | `not_found` | 404 | Resource not found | Check resource ID exists and you own it |
 | `invalid_ip` | 400 | Private IP (192.168.x, 10.x) | Use public IP or `"ipv4":"auto"` |
-| `invalid_hostname` | 400 | Bad hostname format | Use valid FQDN (e.g., `host.apertodns.com`) |
+| `invalid_hostname` | 400 | Bad hostname format | Use valid FQDN (e.g., `home.example.com`) |
 | `invalid_ttl` | 400 | TTL out of range | Use TTL between 60 and 86400 seconds |
 | `invalid_json` | 400 | Malformed JSON body | Check JSON syntax, quotes, brackets |
 | `rate_limited` | 429 | Too many requests | Wait 60 seconds (max 60 req/min for updates) |
