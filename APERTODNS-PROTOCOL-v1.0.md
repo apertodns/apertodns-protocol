@@ -3,7 +3,7 @@
 **Version:** 1.2.0
 **Status:** Stable
 **Author:** Andrea Ferro <support@apertodns.com>
-**Last Updated:** 2025-12-29
+**Last Updated:** 2026-01-01
 **License:** MIT
 
 ---
