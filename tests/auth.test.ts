@@ -53,7 +53,7 @@ describe('Authentication - Bearer Token', () => {
       });
 
       const data = await response.json();
-      expect(data.status).toBe('error');
+      expect(data.success).toBe(false);
       expect(data.error).toBeDefined();
       expect(data.error.code).toBe('unauthorized');
     });
