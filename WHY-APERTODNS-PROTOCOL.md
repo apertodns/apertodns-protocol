@@ -56,7 +56,7 @@ good 1.2.3.4
 {
   "success": true,
   "data": {
-    "hostname": "example.apertodns.com",
+    "hostname": "home.example.com",
     "ipv4": "1.2.3.4",
     "ipv4_previous": "1.2.3.3",
     "ttl": 300,
@@ -79,7 +79,7 @@ DynDNS2 was designed before IPv6 adoption. The `myip` parameter expects IPv4 for
 
 ```json
 {
-  "hostname": "example.apertodns.com",
+  "hostname": "home.example.com",
   "ipv4": "auto",
   "ipv6": "auto"
 }
@@ -142,7 +142,7 @@ Webhook support with HMAC-SHA256 signed payloads:
   "event": "ip_changed",
   "timestamp": "2025-01-01T12:00:00.000Z",
   "data": {
-    "hostname": "example.apertodns.com",
+    "hostname": "home.example.com",
     "ipv4_previous": "1.2.3.3",
     "ipv4_current": "1.2.3.4"
   }
@@ -226,7 +226,7 @@ Discovery endpoint at `/.well-known/apertodns/v1/info`:
 ApertoDNS Protocol maintains full DynDNS2 compatibility:
 
 ```
-GET /nic/update?hostname=example.apertodns.com&myip=1.2.3.4
+GET /nic/update?hostname=home.example.com&myip=1.2.3.4
 Authorization: Basic dXNlcm5hbWU6dG9rZW4=
 ```
 
