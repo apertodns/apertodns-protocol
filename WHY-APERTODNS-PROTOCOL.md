@@ -252,8 +252,9 @@ ApertoDNS: Provider-agnostic token format with built-in metadata:
 {provider}_{environment}_{random}
 
 Examples:
-- apertodns_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG
-- desec_test_xK9mNpR2sT5vWxY8zA1bC4dE6fG7Hqj3
+- apertodns_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG (ApertoDNS)
+- desec_live_xK9mNpR2sT5vWxY8zA1bC4dE6fG7Hqj3 (deSEC)
+- duckdns_test_zA1bC4dE6fG7Hqj3kL9mNpR2sT5vWxY8 (DuckDNS)
 ```
 
 ### Webhook Security
