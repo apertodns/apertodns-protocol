@@ -43,7 +43,7 @@ const client = new ApertoDNSClient({
 });
 
 const result = await client.update({
-  hostname: 'myhost.apertodns.com',
+  hostname: 'home.example.com',
   ipv4: 'auto'
 });
 ```

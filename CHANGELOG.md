@@ -162,13 +162,13 @@ Example:
 
 ```bash
 # Old (DynDNS2)
-curl -u "user:token" "https://api.apertodns.com/nic/update?hostname=myhost.apertodns.com&myip=auto"
+curl -u "user:token" "https://api.apertodns.com/nic/update?hostname=home.example.com&myip=auto"
 
 # New (Modern API)
 curl -X POST "https://api.apertodns.com/.well-known/apertodns/v1/update" \
   -H "Authorization: Bearer apertodns_live_xxx" \
   -H "Content-Type: application/json" \
-  -d '{"hostname": "myhost.apertodns.com", "ipv4": "auto"}'
+  -d '{"hostname": "home.example.com", "ipv4": "auto"}'
 ```
 
 ---
