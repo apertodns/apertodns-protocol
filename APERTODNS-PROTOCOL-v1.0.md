@@ -377,13 +377,16 @@ POST /.well-known/apertodns/v1/update
 
 ```http
 POST /.well-known/apertodns/v1/update HTTP/1.1
-Host: api.apertodns.com
-Authorization: Bearer apertodns_live_xxxxxxxxxxxxxxxxxx
+Host: api.example.com
+Authorization: Bearer {token}
 Content-Type: application/json
 Accept: application/json
 User-Agent: MyClient/1.0.0
 X-Request-ID: 550e8400-e29b-41d4-a716-446655440000
 ```
+
+> Example uses `api.example.com`. Replace with your provider's API endpoint.
+> Token format: `{provider}_{environment}_{random}`. See [Section 5.1](#51-token-format).
 
 **Request Body:**
 
@@ -472,10 +475,12 @@ GET /nic/update?hostname={hostname}&myip={ip}
 
 ```http
 GET /nic/update?hostname=home.example.com&myip=203.0.113.50 HTTP/1.1
-Host: api.apertodns.com
-Authorization: Basic dXNlcjp0b2tlbg==
+Host: api.example.com
+Authorization: Basic base64(user:token)
 User-Agent: ddclient/3.9.1
 ```
+
+> Replace `api.example.com` with your provider's API endpoint.
 
 **Query Parameters:**
 
