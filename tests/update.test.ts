@@ -2,17 +2,20 @@
  * Protocol Compliance Tests - Update Endpoint
  * @author Andrea Ferro <support@apertodns.com>
  *
- * These tests verify update endpoint compliance with ApertoDNS Protocol v1.0
+ * These tests verify update endpoint compliance with ApertoDNS Protocol v1.2
+ *
+ * Set APERTODNS_TEST_TOKEN environment variable to run authenticated tests.
  */
 
 import { describe, it, expect } from 'vitest';
 
 const BASE_URL = process.env.APERTODNS_TEST_URL || 'https://api.apertodns.com';
-const TEST_TOKEN = process.env.APERTODNS_TEST_TOKEN || 'apertodns_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+const TEST_TOKEN = process.env.APERTODNS_TEST_TOKEN || '';
+const HAS_VALID_TOKEN = TEST_TOKEN.length > 0;
 
 describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () => {
   describe('Request Validation', () => {
-    it('MUST require hostname field', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST require hostname field', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
         method: 'POST',
         headers: {
@@ -29,7 +32,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
       expect(data.error.code).toBe('validation_error');
     });
 
-    it('MUST validate hostname format', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST validate hostname format', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
         method: 'POST',
         headers: {
@@ -47,7 +50,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
       expect(['validation_error', 'invalid_hostname']).toContain(data.error.code);
     });
 
-    it('MUST reject private IPv4 addresses', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST reject private IPv4 addresses', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
         method: 'POST',
         headers: {
@@ -65,7 +68,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
       expect(data.error.code).toBe('invalid_ip');
     });
 
-    it('MUST reject TTL below minimum (60)', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST reject TTL below minimum (60)', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
         method: 'POST',
         headers: {
@@ -84,7 +87,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
       expect(['validation_error', 'invalid_ttl']).toContain(data.error.code);
     });
 
-    it('MUST reject TTL above maximum (86400)', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST reject TTL above maximum (86400)', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
         method: 'POST',
         headers: {
@@ -109,7 +112,6 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -125,7 +127,6 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -141,7 +142,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
   });
 
   describe('Auto IP Detection', () => {
-    it('MUST support "auto" value for ipv4', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST support "auto" value for ipv4', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
         method: 'POST',
         headers: {
@@ -161,7 +162,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
       }
     });
 
-    it('MUST support "auto" value for ipv6', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST support "auto" value for ipv6', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
         method: 'POST',
         headers: {
@@ -184,7 +185,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
 
 describe('Legacy Update Endpoint (GET /nic/update)', () => {
   describe('DynDNS2 Compatibility', () => {
-    it('MUST always return HTTP 200', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST always return HTTP 200', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
       const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com&myip=auto`, {
@@ -197,7 +198,7 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
       expect(response.status).toBe(200);
     });
 
-    it('MUST return text/plain content type', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST return text/plain content type', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
       const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com&myip=auto`, {
@@ -209,7 +210,7 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
       expect(response.headers.get('content-type')).toContain('text/plain');
     });
 
-    it('MUST return valid DynDNS2 response codes', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST return valid DynDNS2 response codes', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
       const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com&myip=auto`, {
@@ -236,7 +237,7 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
   });
 
   describe('Query Parameters', () => {
-    it('MUST support hostname parameter', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST support hostname parameter', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
       const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com`, {
@@ -248,7 +249,7 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
       expect(response.status).toBe(200);
     });
 
-    it('SHOULD support myip parameter', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('SHOULD support myip parameter', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
       const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com&myip=203.0.114.1`, {
@@ -260,7 +261,7 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
       expect(response.status).toBe(200);
     });
 
-    it('SHOULD support comma-separated hostnames', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('SHOULD support comma-separated hostnames', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
       const response = await fetch(`${BASE_URL}/nic/update?hostname=host1.apertodns.com,host2.apertodns.com`, {
@@ -276,7 +277,7 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
 
 describe('Bulk Update Endpoint (POST /.well-known/apertodns/v1/bulk-update)', () => {
   describe('Request Validation', () => {
-    it('MUST reject more than 100 updates', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST reject more than 100 updates', async () => {
       const updates = Array(101).fill(null).map((_, i) => ({
         hostname: `host${i}.apertodns.com`,
         ipv4: 'auto'
@@ -298,7 +299,7 @@ describe('Bulk Update Endpoint (POST /.well-known/apertodns/v1/bulk-update)', ()
   });
 
   describe('Response Format', () => {
-    it('MUST return summary with total, successful, failed counts', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST return summary with total, successful, failed counts', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/bulk-update`, {
         method: 'POST',
         headers: {
@@ -323,7 +324,7 @@ describe('Bulk Update Endpoint (POST /.well-known/apertodns/v1/bulk-update)', ()
       }
     });
 
-    it('MUST return 207 for partial success', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('MUST return 207 for partial success', async () => {
       // This test assumes at least one hostname doesn't exist
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/bulk-update`, {
         method: 'POST',
