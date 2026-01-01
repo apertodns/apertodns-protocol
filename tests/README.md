@@ -1,5 +1,7 @@
 # ApertoDNS Protocol Conformance Tests
 
+> **Note:** "ApertoDNS Protocol" is the name of the open standard (like "HTTP" or "OAuth"). The `APERTODNS_*` environment variables refer to the protocol, not a specific provider. Any DDNS provider implementing this protocol can use these conformance tests.
+
 These tests validate that an API implementation conforms to the [ApertoDNS Protocol IETF Draft](https://datatracker.ietf.org/doc/draft-ferro-dnsop-apertodns-protocol/).
 
 ## Prerequisites
