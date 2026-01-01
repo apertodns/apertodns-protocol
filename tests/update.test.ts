@@ -121,7 +121,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
       expect(response.headers.get('content-type')).toContain('application/json');
     });
 
-    it('MUST include status field in response', async () => {
+    it('MUST include success field in response', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
         method: 'POST',
         headers: {
@@ -135,8 +135,8 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
       });
 
       const data = await response.json();
-      expect(data.status).toBeDefined();
-      expect(['success', 'error']).toContain(data.status);
+      expect(data.success).toBeDefined();
+      expect(typeof data.success).toBe('boolean');
     });
   });
 
@@ -315,7 +315,7 @@ describe('Bulk Update Endpoint (POST /.well-known/apertodns/v1/bulk-update)', ()
 
       const data = await response.json();
 
-      if (data.status !== 'error') {
+      if (data.success) {
         expect(data.data.summary).toBeDefined();
         expect(data.data.summary.total).toBeDefined();
         expect(data.data.summary.successful).toBeDefined();
