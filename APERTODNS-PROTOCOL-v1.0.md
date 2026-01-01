@@ -80,7 +80,7 @@ curl "https://api.{provider-domain}/.well-known/apertodns/v1/status/myhost.{prov
 ### 5. Legacy DynDNS2 (for routers)
 
 ```bash
-curl -u "username:{your_token}" \
+curl -u "user:{your_token}" \
   "https://api.{provider-domain}/nic/update?hostname=myhost.{provider-domain}&myip=auto"
 ```
 
