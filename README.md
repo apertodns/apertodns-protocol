@@ -52,7 +52,7 @@ const result = await client.update({
 
 1. Read the [Protocol Specification](./APERTODNS-PROTOCOL-v1.0.md)
 2. Implement the required endpoints (Layers 0, 1, 2)
-3. Run the [compliance tests](./tests/protocol-compliance/)
+3. Run the [conformance tests](./tests/)
 4. Submit a PR to be listed in [ADOPTERS.md](./ADOPTERS.md)
 
 ## Protocol Layers
@@ -63,6 +63,20 @@ const result = await client.update({
 | 1 | Legacy Compatibility | Yes | DynDNS2 `/nic/update` endpoint |
 | 2 | Modern API | Yes | REST endpoints under `/.well-known/apertodns/v1/` |
 | 3 | Extended Features | No | Webhooks, bulk operations, token management |
+
+## Conformance Testing
+
+Run the included test suite to verify your implementation:
+
+```bash
+cd tests
+npm install
+export APERTODNS_TEST_URL="https://api.your-provider.com"
+export APERTODNS_TEST_TOKEN="your_api_key"
+npm test
+```
+
+See [tests/README.md](./tests/README.md) for full documentation.
 
 ## Reference Implementation
 
