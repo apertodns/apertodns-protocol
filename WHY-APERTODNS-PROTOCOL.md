@@ -54,7 +54,7 @@ good 1.2.3.4
 
 ```json
 {
-  "status": "success",
+  "success": true,
   "data": {
     "hostname": "example.apertodns.com",
     "ipv4": "1.2.3.4",
@@ -117,13 +117,13 @@ Response includes per-hostname status:
 
 ```json
 {
-  "status": "partial_success",
+  "success": true,
   "data": {
     "summary": { "total": 3, "successful": 2, "failed": 1 },
     "results": [
-      { "hostname": "host1.example.com", "status": "success", "changed": true },
-      { "hostname": "host2.example.com", "status": "success", "changed": false },
-      { "hostname": "host3.example.com", "status": "error", "error": {"code": "hostname_not_found"} }
+      { "hostname": "host1.example.com", "success": true, "changed": true },
+      { "hostname": "host2.example.com", "success": true, "changed": false },
+      { "hostname": "host3.example.com", "success": false, "error": {"code": "hostname_not_found"} }
     ]
   }
 }
