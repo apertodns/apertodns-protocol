@@ -253,7 +253,7 @@ Where:
 - `{random}`: Cryptographically secure random string (minimum 32
   characters recommended)
 
-Example: `apertodns_live_Kj8mP2xL9nQ4wR7vY1zA3bC6dE0fG5hI`
+Example: `example_live_Kj8mP2xL9nQ4wR7vY1zA3bC6dE0fG5hI`
 
 This format enables:
 

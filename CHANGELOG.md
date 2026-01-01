@@ -98,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bearer Token authentication (preferred)
 - API Key header authentication (alternative)
 - Basic Auth for legacy endpoint only
-- Token format: `apt_{environment}_{random}`
+- Token format: `{provider}_{environment}_{random}`
 - Token permissions: update, read, webhooks, tokens, admin
 - Token constraints: allowed hostnames, allowed IPs, expiration
 
