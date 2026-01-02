@@ -5,6 +5,25 @@ All notable changes to the ApertoDNS Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2026-01-02
+
+### Changed
+
+- **Moved to Provider Extensions**: API Keys, Token Management, and Webhook Management
+  endpoints have been moved out of the protocol standard namespace. These features are
+  now documented as provider-specific extensions under `/api/*` namespace.
+  - The protocol standard defines only 7 endpoints under `/.well-known/apertodns/v1/`
+  - Management APIs (webhooks, tokens, api-keys) are provider-specific implementations
+  - Webhook **delivery format** remains standardized in the protocol
+
+### Clarified
+
+- Added Section 14 "Provider Extensions" to document non-standard functionality
+- Clarified that GDPR endpoints are provider-specific (already correctly documented)
+- Updated /info response to show only standard endpoints
+
+---
+
 ## [1.2.1] - 2025-12-29
 
 ### Added
@@ -24,22 +43,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **API Keys Management** - Modern scope-based credentials
-  - `GET /.well-known/apertodns/v1/api-keys` - List API keys
-  - `POST /.well-known/apertodns/v1/api-keys` - Create API key
-  - `DELETE /.well-known/apertodns/v1/api-keys/{id}` - Delete API key
+  > **Note (v1.2.2)**: Moved to provider extensions. Use `/api/api-keys` instead.
+  - ~~`GET /.well-known/apertodns/v1/api-keys`~~ → `/api/api-keys`
+  - ~~`POST /.well-known/apertodns/v1/api-keys`~~ → `/api/api-keys`
+  - ~~`DELETE /.well-known/apertodns/v1/api-keys/{id}`~~ → `/api/api-keys/{id}`
   - Granular scopes: domains, tokens, records, webhooks, dns, profile, custom-domains, credentials
 
 - **Token Management** - Legacy domain-bound tokens
-  - `GET /.well-known/apertodns/v1/tokens` - List tokens
-  - `POST /.well-known/apertodns/v1/tokens` - Create token
-  - `POST /.well-known/apertodns/v1/tokens/{id}/regenerate` - Regenerate token
-  - `DELETE /.well-known/apertodns/v1/tokens/{id}` - Delete token
+  > **Note (v1.2.2)**: Moved to provider extensions. Use `/api/tokens` instead.
+  - ~~`GET /.well-known/apertodns/v1/tokens`~~ → `/api/tokens`
+  - ~~`POST /.well-known/apertodns/v1/tokens`~~ → `/api/tokens`
+  - ~~`POST /.well-known/apertodns/v1/tokens/{id}/regenerate`~~ → `/api/tokens/{id}/regenerate`
+  - ~~`DELETE /.well-known/apertodns/v1/tokens/{id}`~~ → `/api/tokens/{id}`
 
 - **Webhook Management** - Full CRUD operations
-  - `GET /.well-known/apertodns/v1/webhooks` - List webhooks
-  - `POST /.well-known/apertodns/v1/webhooks` - Create webhook
-  - `PATCH /.well-known/apertodns/v1/webhooks/{id}` - Update webhook
-  - `DELETE /.well-known/apertodns/v1/webhooks/{id}` - Delete webhook
+  > **Note (v1.2.2)**: Moved to provider extensions. Use `/api/webhooks` instead.
+  > Webhook **delivery format** (payload, signatures) remains part of the protocol standard.
+  - ~~`GET /.well-known/apertodns/v1/webhooks`~~ → `/api/webhooks`
+  - ~~`POST /.well-known/apertodns/v1/webhooks`~~ → `/api/webhooks`
+  - ~~`PATCH /.well-known/apertodns/v1/webhooks/{id}`~~ → `/api/webhooks/{id}`
+  - ~~`DELETE /.well-known/apertodns/v1/webhooks/{id}`~~ → `/api/webhooks/{id}`
 
 - **New Error Codes**
   - `invalid_json` (400) - Invalid JSON in request body
@@ -81,15 +104,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Layer 2: Modern API (REST endpoints under /.well-known/apertodns/v1/)
 - Layer 3: Extended Features (webhooks, bulk operations, token management)
 
-#### Endpoints
+#### Standard Protocol Endpoints
 
 - `GET /.well-known/apertodns/v1/info` - Discovery endpoint
+- `GET /.well-known/apertodns/v1/health` - Health check (added v1.2.1)
 - `POST /.well-known/apertodns/v1/update` - Single hostname update
 - `POST /.well-known/apertodns/v1/bulk-update` - Bulk hostname update
 - `GET /.well-known/apertodns/v1/status/{hostname}` - Hostname status
-- `POST/GET/DELETE /.well-known/apertodns/v1/webhooks` - Webhook management
-- `POST/GET/DELETE /.well-known/apertodns/v1/tokens` - Token management
+- `GET /.well-known/apertodns/v1/domains` - List user domains (added v1.2.1)
 - `GET /nic/update` - Legacy DynDNS2 compatibility
+
+#### Provider Extensions (moved v1.2.2)
+
+> **Note**: The following endpoints were originally documented as protocol endpoints
+> but have been moved to provider extensions as of v1.2.2.
+
+- ~~`POST/GET/DELETE /.well-known/apertodns/v1/webhooks`~~ → `/api/webhooks`
+- ~~`POST/GET/DELETE /.well-known/apertodns/v1/tokens`~~ → `/api/tokens`
 
 #### Authentication
 
