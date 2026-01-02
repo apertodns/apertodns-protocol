@@ -316,7 +316,7 @@ curl https://api.example.com/.well-known/apertodns/v1/info
 ```json
 {
   "protocol": "apertodns",
-  "protocol_version": "1.0.0",
+  "protocol_version": "1.2.0",
   "provider": {
     "name": "ApertoDNS",
     "website": "https://apertodns.com",
