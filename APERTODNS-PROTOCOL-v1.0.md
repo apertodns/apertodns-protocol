@@ -134,7 +134,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    ApertoDNS Protocol v1.0                      │
+│                    ApertoDNS Protocol v1.2                      │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │   LAYER 0: Transport Security (REQUIRED)                        │
@@ -151,18 +151,24 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 │                                                                 │
 │   LAYER 2: Modern API (REQUIRED)                                │
 │   ├── REST endpoints under /.well-known/apertodns/v1/          │
+│   │   ├── /info, /health (public)                              │
+│   │   ├── /update, /bulk-update (auth)                         │
+│   │   └── /status/{hostname}, /domains (auth)                  │
 │   ├── Bearer Token authentication                               │
 │   ├── JSON request/response                                     │
 │   ├── Structured errors with codes                              │
 │   └── Rate limiting headers                                     │
 │                                                                 │
-│   LAYER 3: Extended Features (OPTIONAL)                         │
-│   ├── Webhooks for notifications                                │
-│   ├── Bulk operations                                           │
-│   ├── Token management API                                      │
-│   └── Audit logging                                             │
+│   LAYER 3: Webhook Notifications (OPTIONAL)                     │
+│   ├── Capability flag in /info response                         │
+│   ├── Standardized delivery format (payload, signatures)       │
+│   └── Management API is provider-specific                       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
+
+Note: Token management, API key management, and other account
+features are provider-specific extensions under /api/* namespace
+and NOT part of the ApertoDNS Protocol standard.
 ```
 
 ### 3.2 Base URL
