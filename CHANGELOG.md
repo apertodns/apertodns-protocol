@@ -89,8 +89,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GET /.well-known/apertodns/v1/status/{hostname}` - Hostname status
 - `POST/GET/DELETE /.well-known/apertodns/v1/webhooks` - Webhook management
 - `POST/GET/DELETE /.well-known/apertodns/v1/tokens` - Token management
-- `POST /.well-known/apertodns/v1/account/export` - GDPR data export
-- `DELETE /.well-known/apertodns/v1/account` - GDPR account deletion
 - `GET /nic/update` - Legacy DynDNS2 compatibility
 
 #### Authentication
@@ -112,10 +110,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HMAC-SHA256 webhook signatures with replay protection
 - IP validation (private range rejection)
 
-#### GDPR Compliance
+#### GDPR Compliance (Provider-Specific)
 
-- Data export endpoint (Article 20)
-- Account deletion endpoint (Article 17)
+> **Note**: GDPR endpoints are provider-specific and NOT part of the ApertoDNS Protocol standard.
+> Each provider SHOULD implement GDPR compliance through their own API endpoints,
+> outside the `/.well-known/apertodns/v1/` namespace.
+
+- Data export functionality (Article 20)
+- Account deletion functionality (Article 17)
 - Minimal data collection
 - 30-day log retention
 
