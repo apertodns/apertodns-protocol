@@ -25,11 +25,12 @@ The ApertoDNS Protocol is an open standard for Dynamic DNS (DDNS) services that 
 7. [Error Handling](#7-error-handling)
 8. [Rate Limiting](#8-rate-limiting)
 9. [IP Validation](#9-ip-validation)
-10. [Webhooks](#10-webhooks)
+10. [Webhook Delivery Format](#10-webhook-delivery-format)
 11. [GDPR Compliance](#11-gdpr-compliance)
 12. [Security Considerations](#12-security-considerations)
 13. [Implementation Notes](#13-implementation-notes)
-14. [References](#14-references)
+14. [Provider Extensions](#14-provider-extensions-not-part-of-protocol-standard)
+15. [References](#15-references)
 
 ---
 
@@ -178,33 +179,19 @@ Example: `https://api.apertodns.com`
 MODERN ENDPOINTS:
 /.well-known/apertodns/v1/
 ├── info                           # Discovery (public, no auth)
+├── health                         # Health check (public, no auth)
 ├── update                         # Single host update (POST)
 ├── bulk-update                    # Multiple hosts (POST)
 ├── status/{hostname}              # Check status (GET)
-│
-├── api-keys                       # API Keys management (v1.2)
-│   ├── GET                        # List API keys
-│   ├── POST                       # Create API key
-│   └── DELETE /{id}               # Delete API key
-│
-├── tokens                         # Token management (v1.2)
-│   ├── GET                        # List tokens
-│   ├── POST                       # Create token
-│   ├── POST /{id}/regenerate      # Regenerate token
-│   └── DELETE /{id}               # Delete token
-│
-├── webhooks                       # Webhook management (v1.2)
-│   ├── GET                        # List webhooks
-│   ├── POST                       # Create webhook
-│   ├── PATCH /{id}                # Update webhook
-│   └── DELETE /{id}               # Delete webhook
-│
-└── domains                       # List user domains (v1.2.1)
-    └── GET                       # List all domains
+└── domains                        # List user domains (GET)
 
 LEGACY ENDPOINT:
-/nic/update                 # DynDNS2 compatible (GET)
+/nic/update                        # DynDNS2 compatible (GET)
 ```
+
+> **Note**: Token management, API key management, and webhook management endpoints
+> are provider-specific extensions and NOT part of the ApertoDNS Protocol standard.
+> Providers MAY implement these under their own `/api/` namespace.
 
 ---
 
@@ -336,8 +323,8 @@ curl https://api.example.com/.well-known/apertodns/v1/info
     "update": "/.well-known/apertodns/v1/update",
     "bulk_update": "/.well-known/apertodns/v1/bulk-update",
     "status": "/.well-known/apertodns/v1/status/{hostname}",
-    "webhooks": "/.well-known/apertodns/v1/webhooks",
-    "tokens": "/.well-known/apertodns/v1/tokens",
+    "domains": "/.well-known/apertodns/v1/domains",
+    "health": "/.well-known/apertodns/v1/health",
     "legacy_dyndns2": "/nic/update"
   },
   "capabilities": {
@@ -604,439 +591,6 @@ GET /.well-known/apertodns/v1/status/{hostname}
 }
 ```
 
-### 6.6 API Keys Management (v1.2)
-
-API Keys are modern, scope-based credentials with granular permissions.
-
-#### List API Keys
-
-```
-GET /.well-known/apertodns/v1/api-keys
-```
-
-**curl Example:**
-
-```bash
-curl https://api.example.com/.well-known/apertodns/v1/api-keys \
-  -H "Authorization: Bearer $YOUR_API_KEY"
-```
-
-**Response 200 OK:**
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 123,
-      "name": "My Script",
-      "keyPrefix": "apertodns_live_wP0V...",
-      "scopes": ["domains:read", "dns:update"],
-      "rateLimit": 1000,
-      "expiresAt": null,
-      "active": true,
-      "createdAt": "2025-12-29T12:00:00.000Z",
-      "lastUsedAt": "2025-12-29T14:30:00.000Z"
-    }
-  ]
-}
-```
-
-**Security:** Full key is NEVER returned in list responses. Only `keyPrefix` (first 20 characters) is shown.
-
-#### Create API Key
-
-```
-POST /.well-known/apertodns/v1/api-keys
-```
-
-**curl Example:**
-
-```bash
-curl -X POST https://api.example.com/.well-known/apertodns/v1/api-keys \
-  -H "Authorization: Bearer $YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"My Script","scopes":["domains:read","dns:update"],"expiresIn":"30d"}'
-```
-
-**Request:**
-
-```json
-{
-  "name": "My Script",
-  "scopes": ["domains:read", "dns:update"],
-  "expiresIn": "30d"
-}
-```
-
-**Available Scopes:**
-
-| Scope | Description |
-|-------|-------------|
-| `domains:read` | Read domain information |
-| `domains:write` | Create/update domains |
-| `domains:delete` | Delete domains |
-| `tokens:read` | List tokens |
-| `tokens:write` | Create tokens |
-| `tokens:delete` | Delete tokens |
-| `records:read` | Read DNS records |
-| `records:write` | Update DNS records |
-| `webhooks:read` | List webhooks |
-| `webhooks:write` | Create/update webhooks |
-| `dns:update` | Update IP addresses |
-| `profile:read` | Read user profile |
-| `custom-domains:read` | Read custom domains |
-| `custom-domains:write` | Manage custom domains |
-| `custom-domains:delete` | Delete custom domains |
-| `credentials:read` | Read provider credentials |
-| `credentials:write` | Manage provider credentials |
-| `credentials:delete` | Delete provider credentials |
-
-**Response 201 Created:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 123,
-    "name": "My Script",
-    "key": "apertodns_live_wP0VqR8nK3mXyZ1234567890",
-    "keyPrefix": "apertodns_live_wP0Vq",
-    "scopes": ["domains:read", "dns:update"],
-    "rateLimit": 1000,
-    "expiresAt": "2026-01-28T12:00:00.000Z",
-    "createdAt": "2025-12-29T12:00:00.000Z"
-  },
-  "warning": "Save this key now. It will not be shown again."
-}
-```
-
-**Critical:** The complete `key` is shown ONLY in this response. Save it immediately.
-
-#### Delete API Key
-
-```
-DELETE /.well-known/apertodns/v1/api-keys/{id}
-```
-
-**curl Example:**
-
-```bash
-curl -X DELETE https://api.example.com/.well-known/apertodns/v1/api-keys/123 \
-  -H "Authorization: Bearer $YOUR_API_KEY"
-```
-
-**Response 200 OK:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 123,
-    "deleted": true
-  }
-}
-```
-
----
-
-### 6.7 Token Management (v1.2)
-
-Tokens are legacy, domain-bound credentials for DynDNS compatibility.
-
-#### List Tokens
-
-```
-GET /.well-known/apertodns/v1/tokens
-```
-
-**curl Example:**
-
-```bash
-curl https://api.example.com/.well-known/apertodns/v1/tokens \
-  -H "Authorization: Bearer $YOUR_API_KEY"
-```
-
-**Response 200 OK:**
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 31,
-      "label": "Home Router",
-      "domainId": 48,
-      "domainName": "home.example.com",
-      "expiresAt": null,
-      "revoked": false,
-      "active": true,
-      "createdAt": "2025-12-28T20:16:37.503Z"
-    }
-  ]
-}
-```
-
-**Security:** Token hash is NEVER returned. Tokens are domain-bound.
-
-#### Create Token
-
-```
-POST /.well-known/apertodns/v1/tokens
-```
-
-**curl Example:**
-
-```bash
-curl -X POST https://api.example.com/.well-known/apertodns/v1/tokens \
-  -H "Authorization: Bearer $YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"domainId":48,"label":"Home Router","expiresIn":"365d"}'
-```
-
-**Request:**
-
-```json
-{
-  "domainId": 48,
-  "label": "Home Router",
-  "expiresIn": "365d"
-}
-```
-
-**Response 201 Created:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 32,
-    "token": "7c4d3f55c63e04d4d3681bb2f89bdc826e95954cc0c3cf2820ba5de95f4e157d",
-    "label": "Home Router",
-    "domainId": 48,
-    "domainName": "home.example.com",
-    "expiresAt": null,
-    "createdAt": "2025-12-29T12:00:00.000Z"
-  },
-  "warning": "Save this token now. It will not be shown again."
-}
-```
-
-#### Regenerate Token
-
-```
-POST /.well-known/apertodns/v1/tokens/{id}/regenerate
-```
-
-Generates a new token value, invalidating the previous one.
-
-**curl Example:**
-
-```bash
-curl -X POST https://api.example.com/.well-known/apertodns/v1/tokens/32/regenerate \
-  -H "Authorization: Bearer $YOUR_API_KEY"
-```
-
-**Response 200 OK:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 32,
-    "token": "444a9bbc2022cc7582bc1cd910c6e7304789f3b2232aff754f2be4ac2b10c4a8",
-    "domainName": "home.example.com"
-  },
-  "warning": "Save this token now. The old token is now invalid."
-}
-```
-
-#### Delete Token
-
-```
-DELETE /.well-known/apertodns/v1/tokens/{id}
-```
-
-**curl Example:**
-
-```bash
-curl -X DELETE https://api.example.com/.well-known/apertodns/v1/tokens/32 \
-  -H "Authorization: Bearer $YOUR_API_KEY"
-```
-
-**Response 200 OK:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 32,
-    "deleted": true
-  }
-}
-```
-
----
-
-### 6.8 Webhook Management (v1.2)
-
-#### List Webhooks
-
-```
-GET /.well-known/apertodns/v1/webhooks
-```
-
-**curl Example:**
-
-```bash
-curl https://api.example.com/.well-known/apertodns/v1/webhooks \
-  -H "Authorization: Bearer $YOUR_API_KEY"
-```
-
-**Response 200 OK:**
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 22,
-      "url": "https://example.com/webhook",
-      "events": ["ip_change", "domain_create"],
-      "domainId": null,
-      "domainName": null,
-      "active": true,
-      "lastCalled": "2025-12-29T10:00:00.000Z",
-      "lastStatus": 200,
-      "failCount": 0,
-      "createdAt": "2025-12-28T17:42:11.816Z",
-      "updatedAt": "2025-12-29T10:00:00.000Z"
-    }
-  ]
-}
-```
-
-#### Create Webhook
-
-```
-POST /.well-known/apertodns/v1/webhooks
-```
-
-**curl Example:**
-
-```bash
-curl -X POST https://api.example.com/.well-known/apertodns/v1/webhooks \
-  -H "Authorization: Bearer $YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"url":"https://example.com/webhook","events":["ip_change"],"secret":"my-32-char-minimum-secret-here!!"}'
-```
-
-**Request:**
-
-```json
-{
-  "url": "https://example.com/webhook",
-  "events": ["ip_change", "domain_create"],
-  "secret": "my-hmac-secret-minimum-32-chars",
-  "domainId": null
-}
-```
-
-**Available Events:**
-
-| Event | Description |
-|-------|-------------|
-| `ip_change` | IP address was updated |
-| `domain_create` | New domain created |
-| `domain_delete` | Domain was deleted |
-| `update_failed` | Update operation failed |
-
-**Response 201 Created:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 23,
-    "url": "https://example.com/webhook",
-    "events": ["ip_change", "domain_create"],
-    "domainId": null,
-    "domainName": null,
-    "active": true,
-    "createdAt": "2025-12-29T14:45:08.995Z"
-  }
-}
-```
-
-**Security:** The `secret` is never returned in responses.
-
-#### Update Webhook
-
-```
-PATCH /.well-known/apertodns/v1/webhooks/{id}
-```
-
-**curl Example:**
-
-```bash
-curl -X PATCH https://api.example.com/.well-known/apertodns/v1/webhooks/23 \
-  -H "Authorization: Bearer $YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"active":false}'
-```
-
-**Request:**
-
-```json
-{
-  "active": false,
-  "events": ["ip_change"]
-}
-```
-
-**Response 200 OK:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 23,
-    "url": "https://example.com/webhook",
-    "events": ["ip_change"],
-    "domainId": null,
-    "domainName": null,
-    "active": false,
-    "updatedAt": "2025-12-29T14:50:00.000Z"
-  }
-}
-```
-
-#### Delete Webhook
-
-```
-DELETE /.well-known/apertodns/v1/webhooks/{id}
-```
-
-**curl Example:**
-
-```bash
-curl -X DELETE https://api.example.com/.well-known/apertodns/v1/webhooks/23 \
-  -H "Authorization: Bearer $YOUR_API_KEY"
-```
-
-**Response 200 OK:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "id": 23,
-    "deleted": true
-  }
-}
-```
-
----
 
 ## 7. Error Handling
 
@@ -1160,9 +714,10 @@ Retry-After: 45
 | `POST /update` | 60/min | Per token |
 | `POST /bulk-update` | 10/min | Per token |
 | `GET /status` | 120/min | Per token |
+| `GET /domains` | 60/min | Per token |
 | `GET /info` | 120/min | Per IP |
+| `GET /health` | 120/min | Per IP |
 | `/nic/update` | 60/min | Per IP |
-| Token/Webhook management | 30/min | Per token |
 
 ### 8.3 Rate Limited Response
 
@@ -1219,32 +774,16 @@ HTTP 429 with body:
 
 ---
 
-## 10. Webhooks
+## 10. Webhook Delivery Format
 
-### 10.1 Create Webhook
+This section defines the standard format for webhook delivery. Providers that support
+webhooks MUST deliver payloads in this format for interoperability.
 
-```
-POST /.well-known/apertodns/v1/webhooks
-```
+> **Note**: The webhook management API (create, list, update, delete) is provider-specific
+> and NOT part of the ApertoDNS Protocol standard. The `webhooks` capability flag in the
+> `/info` response indicates whether a provider supports webhook notifications.
 
-**Request:**
-
-```json
-{
-  "name": "IP Change Notification",
-  "hostname": "home.example.com",
-  "url": "https://my-server.com/webhook/ip-changed",
-  "events": ["ip_changed"],
-  "secret": "my-webhook-secret-minimum-32-characters-long",
-  "enabled": true,
-  "retry_policy": {
-    "max_retries": 3,
-    "retry_delay_seconds": 60
-  }
-}
-```
-
-### 10.2 Webhook Events
+### 10.1 Webhook Events
 
 | Event | Description |
 |-------|-------------|
@@ -1253,7 +792,7 @@ POST /.well-known/apertodns/v1/webhooks
 | `hostname_deleted` | Hostname was deleted |
 | `update_failed` | Update failed (e.g., rate limit) |
 
-### 10.3 Webhook Payload
+### 10.2 Webhook Payload
 
 ```http
 POST /webhook/ip-changed HTTP/1.1
@@ -1283,7 +822,7 @@ X-ApertoDNS-Signature: sha256=xxxxxxxxxxxxxxxxxxxxxx
 }
 ```
 
-### 10.4 Signature Verification
+### 10.3 Signature Verification
 
 ```javascript
 const crypto = require('crypto');
@@ -1446,7 +985,29 @@ function legacyResponse(result) {
 
 ---
 
-## 14. References
+## 14. Provider Extensions (Not Part of Protocol Standard)
+
+The following features are provider-specific extensions and NOT part of the ApertoDNS
+Protocol standard. Providers MAY implement these under their own `/api/` namespace:
+
+| Extension | Description |
+|-----------|-------------|
+| `/api/webhooks` | Webhook management (create, list, update, delete) |
+| `/api/tokens` | Token management |
+| `/api/api-keys` | API key management |
+| `/api/export` | GDPR data export (Article 20) |
+| `/api/delete-account` | GDPR account deletion (Article 17) |
+
+Providers implementing the ApertoDNS Protocol are NOT required to support these extensions.
+Each provider SHOULD document their extensions separately.
+
+> **Note**: The `webhooks` capability flag in the `/info` response indicates whether
+> a provider supports webhook notifications (Section 10), but the webhook *management*
+> API is implementation-specific and should be documented separately by each provider.
+
+---
+
+## 15. References
 
 - RFC 2119 - Key words for use in RFCs
 - RFC 1035 - Domain Names - Implementation and Specification
@@ -1461,7 +1022,8 @@ function legacyResponse(result) {
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.2.0 | 2025-12-29 | Added Management endpoints (API Keys, Tokens, Webhooks), new error codes |
+| 1.2.1 | 2026-01-02 | Moved management endpoints to provider extensions; clarified webhook delivery format |
+| 1.2.0 | 2025-12-29 | Added health/domains endpoints, new error codes |
 | 1.1.0 | 2025-12-28 | Added Custom Domains support (Route53, Cloudflare), Bulk Update |
 | 1.0.0 | 2025-01-01 | Initial stable release |
 
