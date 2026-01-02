@@ -9,7 +9,7 @@ info:
     **Reference Implementation:** [ApertoDNS](https://apertodns.com)
 
     **Protocol Specification:** [GitHub](https://github.com/apertodns/apertodns-protocol)
-  version: 1.2.0
+  version: 1.2.2
   contact:
     name: ApertoDNS
     url: https://apertodns.com
