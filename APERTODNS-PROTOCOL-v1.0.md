@@ -1,9 +1,9 @@
 # ApertoDNS Protocol Specification v1.2
 
-**Version:** 1.2.0
+**Version:** 1.2.3
 **Status:** Stable
 **Author:** Andrea Ferro <support@apertodns.com>
-**Last Updated:** 2026-01-01
+**Last Updated:** 2026-01-15
 **License:** MIT
 
 ---
@@ -316,7 +316,7 @@ curl https://api.example.com/.well-known/apertodns/v1/info
 ```json
 {
   "protocol": "apertodns",
-  "protocol_version": "1.2.0",
+  "protocol_version": "1.2.3",
   "provider": {
     "name": "ApertoDNS",
     "website": "https://apertodns.com",
@@ -1040,7 +1040,9 @@ Each provider SHOULD document their extensions separately.
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.2.1 | 2026-01-02 | Moved management endpoints to provider extensions; clarified webhook delivery format |
+| 1.2.3 | 2026-01-15 | Added `ipv4_auto_failed` error code, documented auto-detection limitations |
+| 1.2.2 | 2026-01-02 | Moved management endpoints to provider extensions |
+| 1.2.1 | 2025-12-29 | Added health/domains endpoints, clarified webhook delivery format |
 | 1.2.0 | 2025-12-29 | Added health/domains endpoints, new error codes |
 | 1.1.0 | 2025-12-28 | Added Custom Domains support (Route53, Cloudflare), Bulk Update |
 | 1.0.0 | 2025-01-01 | Initial stable release |

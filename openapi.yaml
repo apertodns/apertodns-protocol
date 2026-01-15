@@ -63,7 +63,7 @@ paths:
                 success: true
                 data:
                   protocol: apertodns
-                  protocol_version: "1.2.0"
+                  protocol_version: "1.2.3"
                   provider:
                     name: ApertoDNS
                     website: https://apertodns.com
@@ -308,7 +308,7 @@ components:
               example: apertodns
             protocol_version:
               type: string
-              example: "1.2.0"
+              example: "1.2.3"
             provider:
               type: object
               properties:
