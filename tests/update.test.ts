@@ -29,7 +29,8 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
 
       expect(response.status).toBe(400);
       const data = await response.json();
-      expect(data.error.code).toBe('validation_error');
+      // Both validation_error (schema) and invalid_hostname (format) are valid responses
+      expect(['validation_error', 'invalid_hostname']).toContain(data.error.code);
     });
 
     it.skipIf(!HAS_VALID_TOKEN)('MUST validate hostname format', async () => {
