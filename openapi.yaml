@@ -520,6 +520,8 @@ components:
         - `invalid_hostname`: Invalid hostname format
         - `invalid_ip`: Invalid or private IP address
         - `ipv4_auto_failed`: Cannot auto-detect IPv4 (connection uses IPv6)
+        - `ipv6_auto_failed`: Cannot auto-detect IPv6 (connection uses IPv4)
+        - `invalid_ttl`: TTL value out of range (must be 60-86400)
         - `validation_error`: Request validation failed
       content:
         application/json:
@@ -540,6 +542,20 @@ components:
                 error:
                   code: ipv4_auto_failed
                   message: "Cannot auto-detect IPv4: your connection uses IPv6. Specify an explicit IPv4 address."
+            ipv6_auto_failed:
+              summary: IPv6 auto-detection failed
+              value:
+                success: false
+                error:
+                  code: ipv6_auto_failed
+                  message: "Cannot auto-detect IPv6: your connection uses IPv4. Specify an explicit IPv6 address."
+            invalid_ttl:
+              summary: Invalid TTL value
+              value:
+                success: false
+                error:
+                  code: invalid_ttl
+                  message: "TTL must be between 60 and 86400 seconds"
 
     Unauthorized:
       description: |
