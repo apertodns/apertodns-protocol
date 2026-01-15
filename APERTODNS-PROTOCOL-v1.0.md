@@ -411,6 +411,17 @@ When `ipv4` or `ipv6` is set to `"auto"`:
 4. Validate that IP is public (not private/reserved)
 5. If private, return error `invalid_ip`
 
+**Auto-Detection Limitations:**
+
+Auto-detection can only detect the address family used by the HTTP connection:
+
+| Client Connection | `ipv4: "auto"` | `ipv6: "auto"` |
+|-------------------|----------------|----------------|
+| Via IPv4 | ✅ Detected | ⚠️ Ignored (returns null) |
+| Via IPv6 | ❌ Error `ipv4_auto_failed` | ✅ Detected |
+
+For reliable dual-stack updates, use explicit IP addresses for both families or make separate requests over each address family.
+
 **Response 200 OK (IP changed):**
 
 ```json
@@ -638,6 +649,7 @@ GET /.well-known/apertodns/v1/status/{hostname}
 | `validation_error` | 400 | Validation failed |
 | `invalid_hostname` | 400 | Invalid hostname format |
 | `invalid_ip` | 400 | Invalid or private IP |
+| `ipv4_auto_failed` | 400 | Cannot auto-detect IPv4 (connection uses IPv6) |
 | `invalid_ttl` | 400 | TTL out of range |
 | `not_found` | 404 | Resource not found |
 | `hostname_not_found` | 404 | Hostname does not exist |
