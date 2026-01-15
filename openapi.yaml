@@ -9,7 +9,7 @@ info:
     **Reference Implementation:** [ApertoDNS](https://apertodns.com)
 
     **Protocol Specification:** [GitHub](https://github.com/apertodns/apertodns-protocol)
-  version: 1.2.2
+  version: 1.2.3
   contact:
     name: ApertoDNS
     url: https://apertodns.com
@@ -106,6 +106,10 @@ paths:
       description: |
         Updates a single DNS hostname with a new IP address.
         Supports both IPv4 and IPv6. If no IP is provided, auto-detection is used.
+
+        **Auto-detection limitation:** Auto-detection only works for the IP family
+        matching the client connection. If connecting via IPv6, `ipv4: "auto"` will
+        return error `ipv4_auto_failed`. For dual-stack updates, use explicit addresses.
       operationId: updateRecord
       security:
         - bearerAuth: []
@@ -511,16 +515,31 @@ components:
 
   responses:
     BadRequest:
-      description: Invalid request parameters
+      description: |
+        Invalid request parameters. Possible error codes:
+        - `invalid_hostname`: Invalid hostname format
+        - `invalid_ip`: Invalid or private IP address
+        - `ipv4_auto_failed`: Cannot auto-detect IPv4 (connection uses IPv6)
+        - `validation_error`: Request validation failed
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
-          example:
-            success: false
-            error:
-              code: invalid_hostname
-              message: Invalid hostname format
+          examples:
+            invalid_hostname:
+              summary: Invalid hostname format
+              value:
+                success: false
+                error:
+                  code: invalid_hostname
+                  message: Invalid hostname format
+            ipv4_auto_failed:
+              summary: IPv4 auto-detection failed
+              value:
+                success: false
+                error:
+                  code: ipv4_auto_failed
+                  message: "Cannot auto-detect IPv4: your connection uses IPv6. Specify an explicit IPv4 address."
 
     Unauthorized:
       description: |
