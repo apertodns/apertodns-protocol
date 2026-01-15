@@ -189,7 +189,7 @@ Discovery endpoint at `/.well-known/apertodns/v1/info`:
 ```json
 {
   "protocol": "apertodns",
-  "protocol_version": "1.2.0",
+  "protocol_version": "1.2.3",
   "capabilities": {
     "ipv4": true,
     "ipv6": true,
