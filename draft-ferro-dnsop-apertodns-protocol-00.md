@@ -575,14 +575,20 @@ in {{RFC9110}}:
 
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
-| unauthorized | 401 | Missing authentication |
-| invalid_token | 401 | Invalid or expired token |
-| forbidden | 403 | Not authorized for resource |
-| not_found | 404 | Hostname not found |
-| rate_limited | 429 | Too many requests |
+| unauthorized | 401 | Missing or invalid authentication |
+| invalid_token | 401 | Token is invalid or expired |
+| token_revoked | 401 | Token has been revoked |
+| forbidden | 403 | Not authorized for this resource |
+| hostname_not_owned | 403 | User does not own this hostname |
 | invalid_hostname | 400 | Invalid hostname format |
-| invalid_ip | 400 | Invalid IP address format |
-| hostname_not_owned | 403 | User does not own hostname |
+| invalid_ip | 400 | Invalid or private IP address |
+| ipv4_auto_failed | 400 | Cannot auto-detect IPv4: client connected via IPv6 |
+| ipv6_auto_failed | 400 | Cannot auto-detect IPv6: client connected via IPv4 |
+| invalid_ttl | 400 | TTL out of valid range (60-86400 seconds) |
+| validation_error | 400 | Request body validation failed |
+| hostname_not_found | 404 | Hostname not registered |
+| rate_limited | 429 | Too many requests |
+| server_error | 500 | Internal server error |
 
 ## Rate Limiting Headers
 
