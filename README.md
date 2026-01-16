@@ -1,7 +1,7 @@
 # ApertoDNS Protocol
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Protocol Version](https://img.shields.io/badge/Protocol-v1.2.3-green.svg)](./APERTODNS-PROTOCOL-v1.0.md)
+[![Protocol Version](https://img.shields.io/badge/Protocol-v1.2.3-green.svg)](./APERTODNS-PROTOCOL.md)
 
 Open standard for Dynamic DNS services.
 
@@ -19,7 +19,7 @@ The ApertoDNS Protocol is an open standard that provides:
 
 ## Documentation
 
-- [Protocol Specification v1.2](./APERTODNS-PROTOCOL-v1.0.md) - Complete protocol specification
+- [Protocol Specification v1.2.3](./APERTODNS-PROTOCOL.md) - Complete protocol specification
 - [OpenAPI Specification](./openapi.yaml) - OpenAPI 3.0.3 schema ([View in Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/apertodns/apertodns-protocol/main/openapi.yaml))
 - [Security Policy](./SECURITY.md) - Security requirements and vulnerability reporting
 - [Changelog](./CHANGELOG.md) - Version history
@@ -50,7 +50,7 @@ const result = await client.update({
 
 ### For Provider Implementers
 
-1. Read the [Protocol Specification](./APERTODNS-PROTOCOL-v1.0.md)
+1. Read the [Protocol Specification](./APERTODNS-PROTOCOL.md)
 2. Implement the required endpoints (Layers 0, 1, 2)
 3. Run the [conformance tests](./tests/)
 4. Submit a PR to be listed in [ADOPTERS.md](./ADOPTERS.md)
