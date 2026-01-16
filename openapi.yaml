@@ -20,7 +20,7 @@ info:
 
 externalDocs:
   description: Full Protocol Specification
-  url: https://github.com/apertodns/apertodns-protocol/blob/main/APERTODNS-PROTOCOL-v1.0.md
+  url: https://github.com/apertodns/apertodns-protocol/blob/main/APERTODNS-PROTOCOL.md
 
 servers:
   - url: https://api.apertodns.com
