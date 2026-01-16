@@ -1,4 +1,4 @@
-# ApertoDNS Protocol Specification v1.2
+# ApertoDNS Protocol Specification v1.2.3
 
 **Version:** 1.2.3
 **Status:** Stable
@@ -134,7 +134,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    ApertoDNS Protocol v1.2                      │
+│                  ApertoDNS Protocol v1.2.3                      │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │   LAYER 0: Transport Security (REQUIRED)                        │
