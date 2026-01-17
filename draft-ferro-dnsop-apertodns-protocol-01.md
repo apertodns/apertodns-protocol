@@ -3,6 +3,7 @@ title: "ApertoDNS Protocol: A Modern Dynamic DNS Update Protocol"
 abbrev: "ApertoDNS Protocol"
 docname: draft-ferro-dnsop-apertodns-protocol-01
 category: std
+submissiontype: IETF
 ipr: trust200902
 area: Operations and Management
 workgroup: DNS Operations
@@ -485,7 +486,7 @@ When auto-detection fails due to address family mismatch:
   "success": false,
   "error": {
     "code": "ipv4_auto_failed",
-    "message": "Cannot auto-detect IPv4: your connection uses IPv6. Specify an explicit IPv4 address."
+    "message": "Cannot auto-detect IPv4 from IPv6 connection"
   }
 }
 ~~~
@@ -883,7 +884,7 @@ All user input MUST be validated:
 - Hostnames MUST conform to DNS naming rules
 - IP addresses MUST be valid IPv4 or IPv6 format
 - TTL values MUST be within acceptable ranges
-- TXT values MUST not exceed 255 characters
+- TXT values MUST NOT exceed 255 characters
 
 ## TXT Record Abuse Prevention
 
