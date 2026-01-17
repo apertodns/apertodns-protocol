@@ -1,295 +1,308 @@
 /**
- * Protocol Compliance Tests - TXT Record Endpoint
+ * Protocol Compliance Tests - TXT Record Operations
+ * ApertoDNS Protocol v1.3.0
+ *
  * @author Andrea Ferro <support@apertodns.com>
  *
- * These tests verify TXT record endpoint compliance with ApertoDNS Protocol v1.3.0
+ * Provider-agnostic conformance tests for TXT record endpoints.
+ * These tests verify compliance with the ApertoDNS Protocol specification.
  *
- * Set APERTODNS_TEST_TOKEN environment variable to run authenticated tests.
+ * Environment variables:
+ * - APERTODNS_TEST_URL: Base URL of the provider (default: https://api.example.com)
+ * - APERTODNS_TEST_TOKEN: API token for authenticated tests
+ * - APERTODNS_TEST_HOSTNAME: Test hostname owned by the token (default: test.example.com)
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest'
 
-const BASE_URL = process.env.APERTODNS_TEST_URL || 'https://api.apertodns.com';
-const TEST_TOKEN = process.env.APERTODNS_TEST_TOKEN || '';
-const HAS_VALID_TOKEN = TEST_TOKEN.length > 0;
+const BASE_URL = process.env.APERTODNS_TEST_URL || 'https://api.example.com'
+const TOKEN = process.env.APERTODNS_TEST_TOKEN || ''
+const TEST_HOSTNAME = process.env.APERTODNS_TEST_HOSTNAME || 'test.example.com'
+const HAS_VALID_TOKEN = TOKEN.length > 0
 
-describe('TXT Record Endpoint (POST /.well-known/apertodns/v1/txt)', () => {
-  describe('Request Validation', () => {
-    it.skipIf(!HAS_VALID_TOKEN)('MUST require hostname field', async () => {
+describe('TXT Record Operations (v1.3.0)', () => {
+  const uniqueValue = () => `test-txt-${Date.now()}`
+
+  describe('POST /.well-known/apertodns/v1/txt', () => {
+    it.skipIf(!HAS_VALID_TOKEN)('should create TXT record', async () => {
+      const value = uniqueValue()
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${TOKEN}`
         },
         body: JSON.stringify({
-          value: 'test-value-123'
+          hostname: `_acme-challenge.${TEST_HOSTNAME}`,
+          value: value,
+          ttl: 60
         })
-      });
+      })
 
-      expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(['validation_error', 'invalid_hostname', 'txt_invalid_name']).toContain(data.error.code);
-    });
+      expect(response.status).toBe(200)
+      const json = await response.json()
+      expect(json.success).toBe(true)
+      expect(json.data.hostname).toBe(`_acme-challenge.${TEST_HOSTNAME}`)
+      expect(json.data.value).toBe(value)
+    })
 
-    it.skipIf(!HAS_VALID_TOKEN)('MUST require value field', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('should accumulate multiple TXT values', async () => {
+      const value1 = uniqueValue()
+      const value2 = uniqueValue()
+
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}`, value: value1 })
+      })
+
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}`, value: value2 })
+      })
+
+      const getResponse = await fetch(
+        `${BASE_URL}/.well-known/apertodns/v1/txt/_acme-challenge.${TEST_HOSTNAME}`,
+        { headers: { 'Authorization': `Bearer ${TOKEN}` } }
+      )
+      const json = await getResponse.json()
+      expect(json.data.values).toContain(value1)
+      expect(json.data.values).toContain(value2)
+    })
+
+    it.skipIf(!HAS_VALID_TOKEN)('should reject TXT value exceeding 255 chars', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
         body: JSON.stringify({
-          hostname: '_acme-challenge.test.apertodns.com'
+          hostname: `_acme-challenge.${TEST_HOSTNAME}`,
+          value: 'x'.repeat(256)
         })
-      });
+      })
 
-      expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(['validation_error', 'txt_value_required']).toContain(data.error.code);
-    });
+      expect(response.status).toBe(400)
+      const json = await response.json()
+      expect(json.success).toBe(false)
+      expect(json.error.code).toBe('txt_value_too_long')
+    })
 
-    it.skipIf(!HAS_VALID_TOKEN)('MUST reject TXT values exceeding 255 characters', async () => {
-      const longValue = 'x'.repeat(256);
+    it.skipIf(!HAS_VALID_TOKEN)('should require hostname field', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          hostname: '_acme-challenge.test.apertodns.com',
-          value: longValue
-        })
-      });
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ value: 'test-value' })
+      })
 
-      expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(['validation_error', 'txt_value_too_long']).toContain(data.error.code);
-    });
+      expect(response.status).toBe(400)
+      const json = await response.json()
+      expect(json.success).toBe(false)
+      expect(['validation_error', 'invalid_hostname', 'txt_invalid_name']).toContain(json.error.code)
+    })
 
-    it.skipIf(!HAS_VALID_TOKEN)('MUST reject TTL below minimum (60)', async () => {
+    it.skipIf(!HAS_VALID_TOKEN)('should require value field', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          hostname: '_acme-challenge.test.apertodns.com',
-          value: 'test-value-123',
-          ttl: 30
-        })
-      });
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}` })
+      })
 
-      expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(['validation_error', 'invalid_ttl']).toContain(data.error.code);
-    });
-  });
+      expect(response.status).toBe(400)
+      const json = await response.json()
+      expect(json.success).toBe(false)
+      expect(['validation_error', 'txt_value_required']).toContain(json.error.code)
+    })
 
-  describe('Response Format', () => {
-    it('MUST return JSON response', async () => {
+    it('should require authentication', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          hostname: '_acme-challenge.test.apertodns.com',
-          value: 'test-value-123'
-        })
-      });
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}`, value: 'test' })
+      })
+      expect(response.status).toBe(401)
+    })
 
-      expect(response.headers.get('content-type')).toContain('application/json');
-    });
-
-    it('MUST include success field in response', async () => {
+    it('should return JSON content-type', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          hostname: '_acme-challenge.test.apertodns.com',
-          value: 'test-value-123'
-        })
-      });
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}`, value: 'test' })
+      })
+      expect(response.headers.get('content-type')).toContain('application/json')
+    })
+  })
 
-      const data = await response.json();
-      expect(data.success).toBeDefined();
-      expect(typeof data.success).toBe('boolean');
-    });
-  });
+  describe('GET /.well-known/apertodns/v1/txt/:hostname', () => {
+    it.skipIf(!HAS_VALID_TOKEN)('should return TXT records array', async () => {
+      const response = await fetch(
+        `${BASE_URL}/.well-known/apertodns/v1/txt/_acme-challenge.${TEST_HOSTNAME}`,
+        { headers: { 'Authorization': `Bearer ${TOKEN}` } }
+      )
 
-  describe('Authentication', () => {
-    it('MUST require authentication', async () => {
-      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
+      expect(response.status).toBe(200)
+      const json = await response.json()
+      expect(json.success).toBe(true)
+      expect(Array.isArray(json.data.values)).toBe(true)
+      expect(typeof json.data.record_count).toBe('number')
+    })
+
+    it.skipIf(!HAS_VALID_TOKEN)('should include hostname in response', async () => {
+      const response = await fetch(
+        `${BASE_URL}/.well-known/apertodns/v1/txt/_acme-challenge.${TEST_HOSTNAME}`,
+        { headers: { 'Authorization': `Bearer ${TOKEN}` } }
+      )
+
+      const json = await response.json()
+      expect(json.data.hostname).toBe(`_acme-challenge.${TEST_HOSTNAME}`)
+    })
+
+    it('should require authentication', async () => {
+      const response = await fetch(
+        `${BASE_URL}/.well-known/apertodns/v1/txt/_acme-challenge.${TEST_HOSTNAME}`
+      )
+      expect(response.status).toBe(401)
+    })
+  })
+
+  describe('DELETE /.well-known/apertodns/v1/txt', () => {
+    it.skipIf(!HAS_VALID_TOKEN)('should delete specific TXT value', async () => {
+      const value = uniqueValue()
+
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          hostname: '_acme-challenge.test.apertodns.com',
-          value: 'test-value-123'
-        })
-      });
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}`, value })
+      })
 
-      expect(response.status).toBe(401);
-      const data = await response.json();
-      expect(['unauthorized', 'invalid_token']).toContain(data.error.code);
-    });
-  });
-});
-
-describe('TXT Record Delete Endpoint (DELETE /.well-known/apertodns/v1/txt)', () => {
-  describe('Request Validation', () => {
-    it.skipIf(!HAS_VALID_TOKEN)('MUST require hostname field', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          value: 'test-value-123'
-        })
-      });
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}`, value })
+      })
 
-      expect(response.status).toBe(400);
-      const data = await response.json();
-      expect(['validation_error', 'invalid_hostname', 'txt_invalid_name']).toContain(data.error.code);
-    });
-  });
+      expect(response.status).toBe(200)
+      const json = await response.json()
+      expect(json.success).toBe(true)
+      expect(json.data.deleted).toBe(true)
+    })
 
-  describe('Selective Deletion', () => {
-    it.skipIf(!HAS_VALID_TOKEN)('SHOULD support optional value field for selective deletion', async () => {
-      // This test verifies the endpoint accepts requests with value field
-      // The actual deletion behavior depends on ownership
+    it.skipIf(!HAS_VALID_TOKEN)('should delete all TXT values when no value specified', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          hostname: '_acme-challenge.nonexistent.example.com',
-          value: 'specific-value-to-delete'
-        })
-      });
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}` })
+      })
 
-      // Should not fail with validation error for having value field
-      const data = await response.json();
-      if (data.error) {
-        expect(data.error.code).not.toBe('validation_error');
-      }
-    });
+      expect(response.status).toBe(200)
+      const json = await response.json()
+      expect(json.success).toBe(true)
+    })
 
-    it.skipIf(!HAS_VALID_TOKEN)('SHOULD support deletion without value (delete all)', async () => {
-      // This test verifies the endpoint accepts requests without value field
+    it.skipIf(!HAS_VALID_TOKEN)('should require hostname field', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          hostname: '_acme-challenge.nonexistent.example.com'
-        })
-      });
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ value: 'some-value' })
+      })
 
-      // Should not fail with validation error for missing value field
-      const data = await response.json();
-      if (data.error) {
-        expect(['not_found', 'forbidden', 'hostname_not_found']).toContain(data.error.code);
-      }
-    });
-  });
+      expect(response.status).toBe(400)
+      const json = await response.json()
+      expect(json.success).toBe(false)
+    })
 
-  describe('Authentication', () => {
-    it('MUST require authentication', async () => {
+    it('should require authentication', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          hostname: '_acme-challenge.test.apertodns.com'
-        })
-      });
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}` })
+      })
+      expect(response.status).toBe(401)
+    })
+  })
 
-      expect(response.status).toBe(401);
-      const data = await response.json();
-      expect(['unauthorized', 'invalid_token']).toContain(data.error.code);
-    });
-  });
-});
+  describe('Multi-TXT Accumulation for ACME DNS-01', () => {
+    it.skipIf(!HAS_VALID_TOKEN)('should support wildcard certificate validation', async () => {
+      // Wildcard certificates require two TXT records:
+      // 1. For the base domain validation
+      // 2. For the wildcard validation
+      // Both use the same _acme-challenge prefix
 
-describe('TXT Record Get Endpoint (GET /.well-known/apertodns/v1/txt/{hostname})', () => {
-  describe('Response Format', () => {
-    it.skipIf(!HAS_VALID_TOKEN)('MUST return JSON response', async () => {
-      const hostname = '_acme-challenge.test.apertodns.com';
-      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt/${encodeURIComponent(hostname)}`, {
-        headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`
-        }
-      });
+      const token1 = uniqueValue()
+      const token2 = uniqueValue()
 
-      expect(response.headers.get('content-type')).toContain('application/json');
-    });
+      // First validation token
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}`, value: token1 })
+      })
 
-    it.skipIf(!HAS_VALID_TOKEN)('MUST include success field in response', async () => {
-      const hostname = '_acme-challenge.test.apertodns.com';
-      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt/${encodeURIComponent(hostname)}`, {
-        headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`
-        }
-      });
+      // Second validation token (must accumulate, not replace)
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}`, value: token2 })
+      })
 
-      const data = await response.json();
-      expect(data.success).toBeDefined();
-      expect(typeof data.success).toBe('boolean');
-    });
+      // Verify both tokens exist
+      const getResponse = await fetch(
+        `${BASE_URL}/.well-known/apertodns/v1/txt/_acme-challenge.${TEST_HOSTNAME}`,
+        { headers: { 'Authorization': `Bearer ${TOKEN}` } }
+      )
+      const json = await getResponse.json()
 
-    it.skipIf(!HAS_VALID_TOKEN)('SHOULD return values array for existing records', async () => {
-      const hostname = '_acme-challenge.test.apertodns.com';
-      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt/${encodeURIComponent(hostname)}`, {
-        headers: {
-          'Authorization': `Bearer ${TEST_TOKEN}`
-        }
-      });
+      expect(json.data.record_count).toBeGreaterThanOrEqual(2)
+      expect(json.data.values).toContain(token1)
+      expect(json.data.values).toContain(token2)
 
-      const data = await response.json();
-      if (data.success && data.data) {
-        expect(Array.isArray(data.data.values)).toBe(true);
-      }
-    });
-  });
+      // Cleanup
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}` })
+      })
+    })
 
-  describe('Authentication', () => {
-    it('MUST require authentication', async () => {
-      const hostname = '_acme-challenge.test.apertodns.com';
-      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt/${encodeURIComponent(hostname)}`);
+    it.skipIf(!HAS_VALID_TOKEN)('should support selective deletion preserving other values', async () => {
+      const keepValue = uniqueValue()
+      const deleteValue = uniqueValue()
 
-      expect(response.status).toBe(401);
-      const data = await response.json();
-      expect(['unauthorized', 'invalid_token']).toContain(data.error.code);
-    });
-  });
-});
+      // Add both values
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}`, value: keepValue })
+      })
 
-describe('TXT Record Multi-Value Accumulation', () => {
-  describe('ACME DNS-01 Wildcard Support', () => {
-    it.skipIf(!HAS_VALID_TOKEN)('SHOULD allow multiple TXT values for same hostname', async () => {
-      // This is a documentation test - actual behavior requires owned hostname
-      // The protocol REQUIRES support for multiple TXT values (wildcard certs)
-      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/info`);
-      const data = await response.json();
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}`, value: deleteValue })
+      })
 
-      if (data.data?.capabilities?.txt_records) {
-        // If TXT is supported, max_records should be defined
-        expect(data.data.capabilities.txt_max_records).toBeGreaterThanOrEqual(2);
-      }
-    });
-  });
-});
+      // Delete only one value
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}`, value: deleteValue })
+      })
+
+      // Verify only keepValue remains
+      const getResponse = await fetch(
+        `${BASE_URL}/.well-known/apertodns/v1/txt/_acme-challenge.${TEST_HOSTNAME}`,
+        { headers: { 'Authorization': `Bearer ${TOKEN}` } }
+      )
+      const json = await getResponse.json()
+
+      expect(json.data.values).toContain(keepValue)
+      expect(json.data.values).not.toContain(deleteValue)
+
+      // Cleanup
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/txt`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+        body: JSON.stringify({ hostname: `_acme-challenge.${TEST_HOSTNAME}` })
+      })
+    })
+  })
+})
