@@ -485,7 +485,7 @@ When auto-detection fails due to address family mismatch:
   "success": false,
   "error": {
     "code": "ipv4_auto_failed",
-    "message": "Cannot detect IPv4 address: client connected via IPv6"
+    "message": "Cannot auto-detect IPv4: your connection uses IPv6. Specify an explicit IPv4 address."
   }
 }
 ~~~
@@ -769,8 +769,8 @@ in {{RFC9110}}:
 | invalid_hostname | 400 | Invalid hostname format |
 | invalid_ip | 400 | Invalid IP address format |
 | hostname_not_owned | 403 | User does not own hostname |
-| ipv4_auto_failed | 400 | Cannot detect IPv4 from IPv6 connection |
-| ipv6_auto_failed | 400 | Cannot detect IPv6 from IPv4 connection |
+| ipv4_auto_failed | 400 | Cannot auto-detect IPv4 from IPv6 connection |
+| ipv6_auto_failed | 400 | Cannot auto-detect IPv6 from IPv4 connection |
 | validation_error | 400 | Request validation failed |
 | invalid_ttl | 400 | TTL value out of acceptable range |
 | txt_not_supported | 400 | Provider does not support TXT records |
