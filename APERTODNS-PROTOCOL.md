@@ -1,9 +1,9 @@
-# ApertoDNS Protocol Specification v1.2.3
+# ApertoDNS Protocol Specification v1.3.0
 
-**Version:** 1.2.3
+**Version:** 1.3.0
 **Status:** Stable
 **Author:** Andrea Ferro <support@apertodns.com>
-**Last Updated:** 2026-01-15
+**Last Updated:** 2026-01-17
 **License:** MIT
 
 ---
@@ -22,15 +22,16 @@ The ApertoDNS Protocol is an open standard for Dynamic DNS (DDNS) services that 
 4. [Transport Security](#4-transport-security)
 5. [Authentication](#5-authentication)
 6. [Endpoints](#6-endpoints)
-7. [Error Handling](#7-error-handling)
-8. [Rate Limiting](#8-rate-limiting)
-9. [IP Validation](#9-ip-validation)
-10. [Webhook Delivery Format](#10-webhook-delivery-format)
-11. [GDPR Compliance](#11-gdpr-compliance)
-12. [Security Considerations](#12-security-considerations)
-13. [Implementation Notes](#13-implementation-notes)
-14. [Provider Extensions](#14-provider-extensions-not-part-of-protocol-standard)
-15. [References](#15-references)
+7. [TXT Records](#7-txt-records)
+8. [Error Handling](#8-error-handling)
+9. [Rate Limiting](#9-rate-limiting)
+10. [IP Validation](#10-ip-validation)
+11. [Webhook Delivery Format](#11-webhook-delivery-format)
+12. [GDPR Compliance](#12-gdpr-compliance)
+13. [Security Considerations](#13-security-considerations)
+14. [Implementation Notes](#14-implementation-notes)
+15. [Provider Extensions](#15-provider-extensions-not-part-of-protocol-standard)
+16. [References](#16-references)
 
 ---
 
@@ -134,7 +135,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                  ApertoDNS Protocol v1.2.3                      │
+│                  ApertoDNS Protocol v1.3.0                      │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │   LAYER 0: Transport Security (REQUIRED)                        │
@@ -608,10 +609,174 @@ GET /.well-known/apertodns/v1/status/{hostname}
 }
 ```
 
+---
 
-## 7. Error Handling
+## 7. TXT Records
 
-### 7.1 Error Response Format
+TXT record management enables ACME DNS-01 challenges for automated SSL certificate issuance, including wildcard certificates.
+
+> **Note:** Providers advertising `txt_records: true` in capabilities MUST implement these endpoints.
+
+### 7.1 TXT Endpoint Overview
+
+```
+/.well-known/apertodns/v1/txt
+├── POST   - Set TXT record (accumulates)
+├── DELETE - Delete TXT record (selective or all)
+└── GET    - Get TXT records (via /txt/{hostname})
+```
+
+### 7.2 Set TXT Record
+
+```
+POST /.well-known/apertodns/v1/txt
+```
+
+**Request:**
+
+```json
+{
+  "hostname": "_acme-challenge.home.example.com",
+  "value": "gfj9Xq...Rg85nM",
+  "ttl": 60
+}
+```
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `hostname` | string | Yes | FQDN for the TXT record |
+| `value` | string | Yes | TXT record value (max 255 chars) |
+| `ttl` | integer | No | TTL in seconds (default: 60) |
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "hostname": "_acme-challenge.home.example.com",
+    "value": "gfj9Xq...Rg85nM",
+    "ttl": 60,
+    "record_count": 1,
+    "timestamp": "2026-01-01T12:00:00.000Z"
+  }
+}
+```
+
+**Multi-TXT Accumulation:**
+
+Multiple calls with different values ACCUMULATE TXT records for the same hostname:
+
+```bash
+# First challenge
+curl -X POST "https://api.{provider-domain}/.well-known/apertodns/v1/txt" \
+  -H "Authorization: Bearer {your_token}" \
+  -d '{"hostname": "_acme-challenge.example.com", "value": "token1"}'
+# record_count: 1
+
+# Second challenge (for wildcard)
+curl -X POST "https://api.{provider-domain}/.well-known/apertodns/v1/txt" \
+  -H "Authorization: Bearer {your_token}" \
+  -d '{"hostname": "_acme-challenge.example.com", "value": "token2"}'
+# record_count: 2
+```
+
+### 7.3 Delete TXT Record
+
+```
+DELETE /.well-known/apertodns/v1/txt
+```
+
+**Selective Deletion (with value):**
+
+```json
+{
+  "hostname": "_acme-challenge.home.example.com",
+  "value": "gfj9Xq...Rg85nM"
+}
+```
+
+**Delete All (without value):**
+
+```json
+{
+  "hostname": "_acme-challenge.home.example.com"
+}
+```
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "hostname": "_acme-challenge.home.example.com",
+    "deleted": true,
+    "values_removed": 1,
+    "remaining_count": 1,
+    "timestamp": "2026-01-01T12:00:00.000Z"
+  }
+}
+```
+
+### 7.4 Get TXT Records
+
+```
+GET /.well-known/apertodns/v1/txt/{hostname}
+```
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "hostname": "_acme-challenge.home.example.com",
+    "values": [
+      "gfj9Xq...Rg85nM",
+      "hK7pLm...Yt42xQ"
+    ],
+    "ttl": 60,
+    "record_count": 2
+  }
+}
+```
+
+### 7.5 TXT Capabilities
+
+Providers advertise TXT support in `/info`:
+
+```json
+{
+  "capabilities": {
+    "txt_records": true,
+    "txt_max_records": 5
+  }
+}
+```
+
+| Capability | Type | Description |
+|------------|------|-------------|
+| `txt_records` | boolean | TXT record management supported |
+| `txt_max_records` | integer | Maximum TXT records per hostname (default: 5) |
+
+### 7.6 TXT Security Requirements
+
+To prevent abuse:
+
+- **Value length**: Maximum 255 characters
+- **Record limit**: Maximum 5 TXT records per hostname (configurable)
+- **Hostname prefix**: Restrict to `_acme-challenge.`, `_dmarc.`, etc.
+- **Rate limit**: 30 requests/minute for TXT operations
+- **Auto-expiration**: Providers MAY expire TXT records after 24 hours
+
+---
+
+## 8. Error Handling
+
+### 8.1 Error Response Format
 
 ```json
 {
@@ -633,7 +798,7 @@ GET /.well-known/apertodns/v1/status/{hostname}
 }
 ```
 
-### 7.2 Error Codes
+### 8.2 Error Codes
 
 | Code | HTTP | Description |
 |------|------|-------------|
@@ -651,6 +816,10 @@ GET /.well-known/apertodns/v1/status/{hostname}
 | `invalid_ip` | 400 | Invalid or private IP |
 | `ipv4_auto_failed` | 400 | Cannot auto-detect IPv4 (connection uses IPv6) |
 | `invalid_ttl` | 400 | TTL out of range |
+| `txt_not_supported` | 400 | Provider does not support TXT records |
+| `txt_limit_exceeded` | 400 | Maximum TXT records per hostname exceeded |
+| `txt_invalid_name` | 400 | TXT hostname must use allowed prefix |
+| `txt_value_too_long` | 400 | TXT value exceeds 255 characters |
 | `not_found` | 404 | Resource not found |
 | `hostname_not_found` | 404 | Hostname does not exist |
 | `token_not_found` | 404 | Token does not exist |
@@ -665,7 +834,7 @@ GET /.well-known/apertodns/v1/status/{hostname}
 | `maintenance` | 503 | Service maintenance |
 | `timeout` | 504 | Request timeout |
 
-### 7.3 Validation Error Details
+### 8.3 Validation Error Details
 
 ```json
 {
@@ -694,7 +863,7 @@ GET /.well-known/apertodns/v1/status/{hostname}
 }
 ```
 
-### 7.4 Common Errors Quick Reference
+### 8.4 Common Errors Quick Reference
 
 | Error | HTTP | Cause | Solution |
 |-------|------|-------|----------|
@@ -714,9 +883,9 @@ GET /.well-known/apertodns/v1/status/{hostname}
 
 ---
 
-## 8. Rate Limiting
+## 9. Rate Limiting
 
-### 8.1 Response Headers
+### 9.1 Response Headers
 
 ```http
 X-RateLimit-Limit: 60
@@ -725,7 +894,7 @@ X-RateLimit-Reset: 1703775600
 Retry-After: 45
 ```
 
-### 8.2 Default Limits
+### 9.2 Default Limits
 
 | Endpoint | Limit | Scope |
 |----------|-------|-------|
@@ -737,7 +906,7 @@ Retry-After: 45
 | `GET /health` | 120/min | Per IP |
 | `/nic/update` | 60/min | Per IP |
 
-### 8.3 Rate Limited Response
+### 9.3 Rate Limited Response
 
 HTTP 429 with body:
 
@@ -754,9 +923,9 @@ HTTP 429 with body:
 
 ---
 
-## 9. IP Validation
+## 10. IP Validation
 
-### 9.1 IPv4 Private Ranges (MUST Reject)
+### 10.1 IPv4 Private Ranges (MUST Reject)
 
 | Range | Description |
 |-------|-------------|
@@ -776,7 +945,7 @@ HTTP 429 with body:
 | 240.0.0.0/4 | Reserved |
 | 255.255.255.255/32 | Limited Broadcast |
 
-### 9.2 IPv6 Private Ranges (MUST Reject)
+### 10.2 IPv6 Private Ranges (MUST Reject)
 
 | Range | Description |
 |-------|-------------|
@@ -792,7 +961,7 @@ HTTP 429 with body:
 
 ---
 
-## 10. Webhook Delivery Format
+## 11. Webhook Delivery Format
 
 This section defines the standard format for webhook delivery. Providers that support
 webhooks MUST deliver payloads in this format for interoperability.
@@ -801,7 +970,7 @@ webhooks MUST deliver payloads in this format for interoperability.
 > and NOT part of the ApertoDNS Protocol standard. The `webhooks` capability flag in the
 > `/info` response indicates whether a provider supports webhook notifications.
 
-### 10.1 Webhook Events
+### 11.1 Webhook Events
 
 | Event | Description |
 |-------|-------------|
@@ -810,7 +979,7 @@ webhooks MUST deliver payloads in this format for interoperability.
 | `hostname_deleted` | Hostname was deleted |
 | `update_failed` | Update failed (e.g., rate limit) |
 
-### 10.2 Webhook Payload
+### 11.2 Webhook Payload
 
 ```http
 POST /webhook/ip-changed HTTP/1.1
@@ -840,7 +1009,7 @@ X-ApertoDNS-Signature: sha256=xxxxxxxxxxxxxxxxxxxxxx
 }
 ```
 
-### 10.3 Signature Verification
+### 11.3 Signature Verification
 
 ```javascript
 const crypto = require('crypto');
@@ -866,7 +1035,7 @@ function verifyWebhookSignature(payload, signature, secret, timestamp) {
 }
 ```
 
-### 10.5 Webhook Security Requirements
+### 11.4 Webhook Security Requirements
 
 - Webhook URLs MUST use HTTPS
 - Provider MUST validate that webhook URL does not resolve to private IP ranges (SSRF protection)
@@ -877,20 +1046,20 @@ function verifyWebhookSignature(payload, signature, secret, timestamp) {
 
 ---
 
-## 11. GDPR Compliance
+## 12. GDPR Compliance
 
 GDPR endpoints are **provider-specific** and NOT part of the ApertoDNS Protocol standard.
 Each provider implementing the ApertoDNS Protocol SHOULD provide GDPR compliance through
 their own API endpoints, outside the `/.well-known/apertodns/v1/` namespace.
 
-### 11.1 Requirements
+### 12.1 Requirements
 
 Providers MUST:
 - Provide data export functionality (Article 20 - Data Portability)
 - Provide account deletion functionality (Article 17 - Right to Erasure)
 - Document their GDPR endpoints in their own API documentation
 
-### 11.2 Reference Implementation (ApertoDNS)
+### 12.2 Reference Implementation (ApertoDNS)
 
 ApertoDNS implements GDPR compliance at:
 - `GET /api/export` - Data export (Article 20)
@@ -900,16 +1069,16 @@ These endpoints are specific to ApertoDNS and not part of the protocol standard
 
 ---
 
-## 12. Security Considerations
+## 13. Security Considerations
 
-### 12.1 Token Security
+### 13.1 Token Security
 
 - Tokens MUST be generated using cryptographically secure random number generator
 - Tokens MUST NOT be logged in plaintext
 - Token storage MUST use secure hashing (bcrypt or Argon2)
 - Token transmission MUST only occur over TLS
 
-### 12.2 Input Validation
+### 13.2 Input Validation
 
 **Hostname Validation:**
 - Maximum 253 characters total
@@ -922,7 +1091,7 @@ These endpoints are specific to ApertoDNS and not part of the protocol standard
 - Must be integer
 - Range: 60 to 86400 seconds
 
-### 12.3 Logging Security
+### 13.3 Logging Security
 
 **MUST log:**
 - Request ID
@@ -938,7 +1107,7 @@ These endpoints are specific to ApertoDNS and not part of the protocol standard
 - Complete request bodies
 - Plain IP addresses beyond 30 days
 
-### 12.4 Webhook Security
+### 13.4 Webhook Security
 
 - SSRF protection: Validate webhook URL does not resolve to private IPs
 - Timeout: Maximum 10 seconds
@@ -947,9 +1116,9 @@ These endpoints are specific to ApertoDNS and not part of the protocol standard
 
 ---
 
-## 13. Implementation Notes
+## 14. Implementation Notes
 
-### 13.1 Hostname Validation Implementation
+### 14.1 Hostname Validation Implementation
 
 ```javascript
 function validateHostname(hostname) {
@@ -969,7 +1138,7 @@ function validateHostname(hostname) {
 }
 ```
 
-### 13.2 Token Generation
+### 14.2 Token Generation
 
 ```javascript
 const crypto = require('crypto');
@@ -983,7 +1152,7 @@ function generateToken(provider, environment = 'live') {
 // Returns: apertodns_live_7Hqj3kL9mNpR2sT5vWxY8zA1bC4dE6fG
 ```
 
-### 13.3 Legacy Response Mapping
+### 14.3 Legacy Response Mapping
 
 ```javascript
 function legacyResponse(result) {
@@ -1003,7 +1172,7 @@ function legacyResponse(result) {
 
 ---
 
-## 14. Provider Extensions (Not Part of Protocol Standard)
+## 15. Provider Extensions (Not Part of Protocol Standard)
 
 The following features are provider-specific extensions and NOT part of the ApertoDNS
 Protocol standard. Providers MAY implement these under their own `/api/` namespace:
@@ -1025,7 +1194,7 @@ Each provider SHOULD document their extensions separately.
 
 ---
 
-## 15. References
+## 16. References
 
 - RFC 2119 - Key words for use in RFCs
 - RFC 1035 - Domain Names - Implementation and Specification
@@ -1040,6 +1209,7 @@ Each provider SHOULD document their extensions separately.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.3.0 | 2026-01-17 | Added TXT record support for ACME DNS-01 challenges |
 | 1.2.3 | 2026-01-15 | Added `ipv4_auto_failed` error code, documented auto-detection limitations |
 | 1.2.2 | 2026-01-02 | Moved management endpoints to provider extensions |
 | 1.2.1 | 2025-12-29 | Added health/domains endpoints, clarified webhook delivery format |
