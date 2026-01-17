@@ -1,7 +1,7 @@
 # ApertoDNS Protocol
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Protocol Version](https://img.shields.io/badge/Protocol-v1.2.3-green.svg)](./APERTODNS-PROTOCOL.md)
+[![Protocol Version](https://img.shields.io/badge/Protocol-v1.3.0-green.svg)](./APERTODNS-PROTOCOL.md)
 
 Open standard for Dynamic DNS services.
 
@@ -12,6 +12,7 @@ The ApertoDNS Protocol is an open standard that provides:
 - **Modern JSON API** with structured responses and error handling
 - **Full DynDNS2 compatibility** for legacy clients (routers, ddclient, etc.)
 - **Native IPv6 support** alongside IPv4
+- **TXT record support** for ACME DNS-01 challenges (RFC 8555)
 - **Webhook notifications** for IP change events
 - **Health check** and **domain listing** endpoints
 - **GDPR compliance** (provider-specific, not part of protocol)
@@ -19,7 +20,7 @@ The ApertoDNS Protocol is an open standard that provides:
 
 ## Documentation
 
-- [Protocol Specification v1.2.3](./APERTODNS-PROTOCOL.md) - Complete protocol specification
+- [Protocol Specification v1.3.0](./APERTODNS-PROTOCOL.md) - Complete protocol specification
 - [OpenAPI Specification](./openapi.yaml) - OpenAPI 3.0.3 schema ([View in Swagger Editor](https://editor.swagger.io/?url=https://raw.githubusercontent.com/apertodns/apertodns-protocol/main/openapi.yaml))
 - [Security Policy](./SECURITY.md) - Security requirements and vulnerability reporting
 - [Changelog](./CHANGELOG.md) - Version history

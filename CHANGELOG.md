@@ -5,6 +5,34 @@ All notable changes to the ApertoDNS Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-01-17
+
+### Added
+
+- **TXT Record Support** for ACME DNS-01 challenges (RFC 8555)
+  - `POST /.well-known/apertodns/v1/txt` - Set TXT record
+  - `DELETE /.well-known/apertodns/v1/txt` - Delete TXT record (selective or all)
+  - `GET /.well-known/apertodns/v1/txt/{hostname}` - Get TXT records
+  - Multi-value accumulation for wildcard certificate validation
+  - Selective deletion by `value` parameter for proper cleanup
+
+- **New Capabilities**
+  - `txt_records` - Boolean indicating TXT record support
+  - `txt_max_records` - Maximum TXT records per hostname (default: 5)
+
+- **New Error Codes**
+  - `txt_not_supported` (400) - Provider does not support TXT records
+  - `txt_limit_exceeded` (400) - Maximum TXT records per hostname exceeded
+  - `txt_invalid_name` (400) - Invalid TXT record hostname format
+  - `txt_value_too_long` (400) - TXT value exceeds 255 characters
+
+### Security
+
+- TXT record value length limit (255 characters) to prevent DNS tunneling abuse
+- Rate limiting on TXT endpoints to prevent abuse
+
+---
+
 ## [1.2.3] - 2026-01-15
 
 ### Added
