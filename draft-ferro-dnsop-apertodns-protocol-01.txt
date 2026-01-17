@@ -1,0 +1,1400 @@
+
+
+
+
+DNS Operations                                                  A. Ferro
+Internet-Draft                                                 ApertoDNS
+Intended status: Standards Track                         15 January 2026
+Expires: 19 July 2026
+
+
+        ApertoDNS Protocol: A Modern Dynamic DNS Update Protocol
+                draft-ferro-dnsop-apertodns-protocol-01
+
+Abstract
+
+   This document specifies the ApertoDNS Protocol, a modern RESTful
+   protocol for dynamic DNS (DDNS) updates.  It provides a secure,
+   provider-agnostic alternative to legacy protocols, with native
+   support for IPv4, IPv6, bulk updates, automatic IP detection, and
+   standardized authentication mechanisms.
+
+   The protocol uses well-known URIs (RFC 8615), JSON payloads (RFC
+   8259), and bearer token authentication (RFC 6750) to enable
+   interoperable dynamic DNS services across different providers.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 19 July 2026.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+
+
+
+Ferro                     Expires 19 July 2026                  [Page 1]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Note to Readers . . . . . . . . . . . . . . . . . . . . . . .   3
+   2.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   4
+     2.1.  Protocol Versioning . . . . . . . . . . . . . . . . . . .   4
+     2.2.  Requirements Language . . . . . . . . . . . . . . . . . .   4
+     2.3.  Goals . . . . . . . . . . . . . . . . . . . . . . . . . .   5
+   3.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   5
+   4.  Protocol Overview . . . . . . . . . . . . . . . . . . . . . .   6
+     4.1.  Base URL  . . . . . . . . . . . . . . . . . . . . . . . .   6
+     4.2.  Content Type  . . . . . . . . . . . . . . . . . . . . . .   6
+     4.3.  Response Format . . . . . . . . . . . . . . . . . . . . .   6
+   5.  Conformance Requirements  . . . . . . . . . . . . . . . . . .   6
+     5.1.  Conformance Levels  . . . . . . . . . . . . . . . . . . .   6
+     5.2.  Capability Advertisement  . . . . . . . . . . . . . . . .   7
+     5.3.  Interoperability  . . . . . . . . . . . . . . . . . . . .   7
+   6.  Authentication  . . . . . . . . . . . . . . . . . . . . . . .   7
+     6.1.  Supported Methods . . . . . . . . . . . . . . . . . . . .   7
+     6.2.  Token Format  . . . . . . . . . . . . . . . . . . . . . .   7
+     6.3.  Token Transmission  . . . . . . . . . . . . . . . . . . .   8
+   7.  Endpoints . . . . . . . . . . . . . . . . . . . . . . . . . .   8
+     7.1.  Discovery Endpoint (/info)  . . . . . . . . . . . . . . .   8
+       7.1.1.  Response Fields . . . . . . . . . . . . . . . . . . .   8
+       7.1.2.  Capability Fields . . . . . . . . . . . . . . . . . .   9
+       7.1.3.  Example Response  . . . . . . . . . . . . . . . . . .  10
+     7.2.  Health Endpoint (/health) . . . . . . . . . . . . . . . .  10
+       7.2.1.  Example Response  . . . . . . . . . . . . . . . . . .  11
+     7.3.  Update Endpoint (/update) . . . . . . . . . . . . . . . .  11
+       7.3.1.  Request Fields  . . . . . . . . . . . . . . . . . . .  11
+       7.3.2.  Auto-Detection Limitations  . . . . . . . . . . . . .  12
+       7.3.3.  Example Request . . . . . . . . . . . . . . . . . . .  12
+       7.3.4.  Example Response  . . . . . . . . . . . . . . . . . .  12
+       7.3.5.  Auto-Detection Failure Response . . . . . . . . . . .  13
+     7.4.  Bulk Update Endpoint (/bulk-update) . . . . . . . . . . .  13
+       7.4.1.  Example Request . . . . . . . . . . . . . . . . . . .  13
+       7.4.2.  Example Response  . . . . . . . . . . . . . . . . . .  13
+     7.5.  Status Endpoint (/status/{hostname})  . . . . . . . . . .  14
+       7.5.1.  Example Response  . . . . . . . . . . . . . . . . . .  14
+     7.6.  Domains Endpoint (/domains) . . . . . . . . . . . . . . .  14
+       7.6.1.  Example Response  . . . . . . . . . . . . . . . . . .  15
+   8.  Error Handling  . . . . . . . . . . . . . . . . . . . . . . .  15
+     8.1.  HTTP Status Codes . . . . . . . . . . . . . . . . . . . .  15
+     8.2.  Error Response Format . . . . . . . . . . . . . . . . . .  16
+     8.3.  Standard Error Codes  . . . . . . . . . . . . . . . . . .  16
+
+
+
+Ferro                     Expires 19 July 2026                  [Page 2]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+     8.4.  Rate Limiting Headers . . . . . . . . . . . . . . . . . .  17
+   9.  Legacy Compatibility  . . . . . . . . . . . . . . . . . . . .  17
+     9.1.  Legacy Response Codes . . . . . . . . . . . . . . . . . .  17
+   10. Comparison with RFC 2136  . . . . . . . . . . . . . . . . . .  18
+   11. Security Considerations . . . . . . . . . . . . . . . . . . .  18
+     11.1.  Transport Security . . . . . . . . . . . . . . . . . . .  18
+     11.2.  Token Security . . . . . . . . . . . . . . . . . . . . .  18
+     11.3.  Hostname Validation  . . . . . . . . . . . . . . . . . .  19
+     11.4.  Rate Limiting  . . . . . . . . . . . . . . . . . . . . .  19
+     11.5.  DNS Rebinding Prevention . . . . . . . . . . . . . . . .  19
+     11.6.  Input Validation . . . . . . . . . . . . . . . . . . . .  19
+     11.7.  Internationalized Domain Names . . . . . . . . . . . . .  19
+   12. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  20
+     12.1.  Data Minimization  . . . . . . . . . . . . . . . . . . .  20
+     12.2.  User Control . . . . . . . . . . . . . . . . . . . . . .  20
+     12.3.  Traffic Analysis . . . . . . . . . . . . . . . . . . . .  20
+     12.4.  Encryption . . . . . . . . . . . . . . . . . . . . . . .  21
+   13. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  21
+     13.1.  Well-Known URI Registration  . . . . . . . . . . . . . .  21
+   14. References  . . . . . . . . . . . . . . . . . . . . . . . . .  21
+     14.1.  Normative References . . . . . . . . . . . . . . . . . .  21
+     14.2.  Informative References . . . . . . . . . . . . . . . . .  22
+   Appendix A.  Acknowledgments  . . . . . . . . . . . . . . . . . .  22
+   Appendix B.  Implementation Status  . . . . . . . . . . . . . . .  22
+     B.1.  ApertoDNS . . . . . . . . . . . . . . . . . . . . . . . .  22
+   Appendix C.  OpenAPI Specification  . . . . . . . . . . . . . . .  23
+   Appendix D.  Example Update Flow  . . . . . . . . . . . . . . . .  23
+   Appendix E.  Changes from Legacy DDNS Protocols . . . . . . . . .  24
+   Appendix F.  Changes from -00 . . . . . . . . . . . . . . . . . .  24
+     F.1.  Editorial Changes . . . . . . . . . . . . . . . . . . . .  24
+     F.2.  Technical Clarifications  . . . . . . . . . . . . . . . .  24
+     F.3.  New Error Codes . . . . . . . . . . . . . . . . . . . . .  24
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  25
+
+1.  Note to Readers
+
+   Discussion of this document takes place on the DNS Operations Working
+   Group mailing list (dnsop@ietf.org).
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/apertodns/apertodns-protocol.
+
+
+
+
+
+
+
+
+
+
+Ferro                     Expires 19 July 2026                  [Page 3]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+2.  Introduction
+
+   Dynamic DNS (DDNS) services allow users with dynamically assigned IP
+   addresses to maintain a consistent hostname that automatically
+   updates when their IP address changes.  This capability is essential
+   for home users, small businesses, and IoT devices that need to be
+   reachable despite lacking static IP addresses.
+
+   While RFC 2136 [RFC2136] defines DNS UPDATE for programmatic DNS
+   modifications, most consumer-facing DDNS services use simpler HTTP-
+   based protocols.  The de facto standard for consumer DDNS emerged
+   organically without formal specification.
+
+   This lack of standardization has led to:
+
+   *  Inconsistent implementations across providers
+
+   *  Security vulnerabilities from ad-hoc designs
+
+   *  Limited feature sets (e.g., no native IPv6 support)
+
+   *  Vendor lock-in due to proprietary extensions
+
+   *  No formal capability negotiation
+
+   This document specifies the ApertoDNS Protocol as a modern, secure,
+   and fully interoperable alternative designed for the current Internet
+   landscape.
+
+2.1.  Protocol Versioning
+
+   The protocol version specified in discovery responses (e.g., "1.2.3")
+   refers to the semantic version of the protocol specification itself.
+   This document represents the first IETF standardization of a protocol
+   that has been in production use since 2024.  The version number in
+   the discovery endpoint reflects the feature set available, while the
+   Internet-Draft version (e.g., "-00") tracks the IETF document
+   revision process separately.
+
+2.2.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+
+
+
+
+Ferro                     Expires 19 July 2026                  [Page 4]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+2.3.  Goals
+
+   The ApertoDNS Protocol is designed with the following goals:
+
+   *  *Provider-agnostic*: Any DDNS provider can implement this protocol
+      using their own domain and branding
+
+   *  *Secure by default*: HTTPS required, bearer token authentication
+
+   *  *Modern*: JSON responses, proper HTTP semantics, native IPv6
+
+   *  *Discoverable*: Self-describing via discovery endpoint
+
+   *  *Extensible*: Capability negotiation allows future enhancements
+
+   *  *Backward compatible*: Optional legacy endpoint for existing
+      clients
+
+3.  Terminology
+
+   This document uses the following terms:
+
+   DDNS:  Dynamic DNS.  A service that automatically updates DNS records
+      when a client's IP address changes.
+
+   Provider:  An organization or service implementing this protocol to
+      offer DDNS services to users.
+
+   Hostname:  A fully qualified domain name (FQDN) managed by the
+      provider and associated with a user account.
+
+   Token:  An authentication credential issued by the provider, used to
+      authorize API requests.
+
+   Auto-detection:  Server-side determination of the client's IP address
+      from the incoming HTTP request, used when the client specifies
+      "auto" as the IP value.
+
+   Client:  Software or device that makes requests to a DDNS provider to
+      update DNS records.
+
+   A-label:  The ASCII-Compatible Encoding (ACE) form of an
+      Internationalized Domain Name label, as defined in [RFC5891].
+
+
+
+
+
+
+
+
+Ferro                     Expires 19 July 2026                  [Page 5]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+4.  Protocol Overview
+
+   The ApertoDNS Protocol is a RESTful API using JSON over HTTPS.  All
+   protocol endpoints are located under the well-known URI path /.well-
+   known/apertodns/v1/.
+
+4.1.  Base URL
+
+   Conforming implementations MUST serve all endpoints under:
+
+   https://{provider-domain}/.well-known/apertodns/v1/
+
+   The use of well-known URIs [RFC8615] ensures consistent endpoint
+   discovery across providers.
+
+4.2.  Content Type
+
+   All request and response bodies MUST use the application/json media
+   type [RFC8259] unless otherwise specified.
+
+4.3.  Response Format
+
+   All responses MUST include a boolean success field at the top level:
+
+   {
+     "success": true,
+     "data": { ... }
+   }
+
+   Or for errors:
+
+   {
+     "success": false,
+     "error": {
+       "code": "error_code",
+       "message": "Human-readable description"
+     }
+   }
+
+5.  Conformance Requirements
+
+   This section defines the requirements for conforming implementations.
+
+5.1.  Conformance Levels
+
+   This protocol defines two conformance levels:
+
+   Core Conformance:  A conforming implementation MUST implement the
+
+
+
+Ferro                     Expires 19 July 2026                  [Page 6]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+      following endpoints: /info, /health, and /update.  A conforming
+      implementation MUST support bearer token authentication.  A
+      conforming implementation MUST serve all endpoints over HTTPS.
+
+   Full Conformance:  In addition to core conformance requirements, a
+      fully conforming implementation MUST implement: /bulk-update,
+      /status/{hostname}, and /domains endpoints.
+
+5.2.  Capability Advertisement
+
+   Implementations MUST accurately advertise their capabilities in the
+   /info endpoint response.  Implementations MUST NOT advertise
+   capabilities they do not support.
+
+5.3.  Interoperability
+
+   Implementations SHOULD accept requests from any conforming client.
+   Implementations MUST NOT require proprietary extensions for basic
+   DDNS functionality.
+
+6.  Authentication
+
+6.1.  Supported Methods
+
+   Protected endpoints require authentication via one of the following
+   methods:
+
+   1.  *Bearer Token* (RECOMMENDED) [RFC6750]: Authorization: Bearer
+       {token}
+
+   2.  *API Key Header*: X-API-Key: {token}
+
+   3.  *HTTP Basic* (legacy only): Authorization: Basic {credentials}
+
+   Implementations MUST support bearer token authentication.
+   Implementations MAY support additional methods.
+
+6.2.  Token Format
+
+   Tokens SHOULD follow the format:
+
+   {provider}_{environment}_{random}
+
+   Where:
+
+   *  {provider}: Provider identifier (e.g., "apertodns", "example")
+
+   *  {environment}: Token environment ("live", "test", "sandbox")
+
+
+
+Ferro                     Expires 19 July 2026                  [Page 7]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+   *  {random}: Cryptographically secure random string (minimum 32
+      characters recommended)
+
+   Example: example_live_Kj8mP2xL9nQ4wR7vY1zA3bC6dE0fG5hI
+
+   This format enables:
+
+   *  Easy identification of token source during debugging
+
+   *  Environment separation (production vs. testing)
+
+   *  Consistent token handling across providers
+
+6.3.  Token Transmission
+
+   Tokens MUST be transmitted only in HTTP headers.  Tokens MUST NOT
+   appear in URLs, query parameters, or request bodies where they might
+   be logged.
+
+7.  Endpoints
+
+7.1.  Discovery Endpoint (/info)
+
+   GET /.well-known/apertodns/v1/info
+
+   The discovery endpoint returns provider information, capabilities,
+   and configuration.  This endpoint MUST NOT require authentication.
+
+7.1.1.  Response Fields
+
+      +==================+========+==========+=====================+
+      | Field            | Type   | Required | Description         |
+      +==================+========+==========+=====================+
+      | protocol         | string | YES      | MUST be "apertodns" |
+      +------------------+--------+----------+---------------------+
+      | protocol_version | string | YES      | Semantic version    |
+      |                  |        |          | (e.g., "1.2.3")     |
+      +------------------+--------+----------+---------------------+
+      | provider         | object | YES      | Provider            |
+      |                  |        |          | information         |
+      +------------------+--------+----------+---------------------+
+      | capabilities     | object | YES      | Supported features  |
+      +------------------+--------+----------+---------------------+
+      | authentication   | object | YES      | Supported auth      |
+      |                  |        |          | methods             |
+      +------------------+--------+----------+---------------------+
+      | endpoints        | object | YES      | Available endpoint  |
+      |                  |        |          | paths               |
+
+
+
+Ferro                     Expires 19 July 2026                  [Page 8]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+      +------------------+--------+----------+---------------------+
+      | rate_limits      | object | NO       | Rate limiting       |
+      |                  |        |          | configuration       |
+      +------------------+--------+----------+---------------------+
+      | server_time      | string | NO       | Current server time |
+      |                  |        |          | (ISO 8601)          |
+      +------------------+--------+----------+---------------------+
+
+                                 Table 1
+
+7.1.2.  Capability Fields
+
+   The capabilities object MUST include the following fields:
+
+   +===================+=========+====================================+
+   | Field             | Type    | Description                        |
+   +===================+=========+====================================+
+   | ipv4              | boolean | IPv4 address updates supported     |
+   +-------------------+---------+------------------------------------+
+   | ipv6              | boolean | IPv6 address updates supported     |
+   +-------------------+---------+------------------------------------+
+   | auto_ip_detection | boolean | Automatic IP detection supported   |
+   +-------------------+---------+------------------------------------+
+   | bulk_update       | boolean | Bulk update endpoint available     |
+   +-------------------+---------+------------------------------------+
+   | max_bulk_size     | integer | Maximum hostnames per bulk request |
+   +-------------------+---------+------------------------------------+
+
+                                 Table 2
+
+   The capabilities object MAY include the following OPTIONAL fields:
+
+   +==========+=========+=============================================+
+   | Field    | Type    | Description                                 |
+   +==========+=========+=============================================+
+   | webhooks | boolean | Provider-specific webhook support available |
+   +----------+---------+---------------------------------------------+
+
+                                 Table 3
+
+   When webhooks is true, the provider offers webhook notifications for
+   DNS update events such as IP address changes.  The webhook API is
+   implementation-specific and not standardized by this protocol
+   version.  Providers offering webhooks SHOULD document their webhook
+   API separately.
+
+   The capabilities object MAY include additional fields for future
+   extensions.  Unknown capability fields SHOULD be ignored by clients.
+
+
+
+Ferro                     Expires 19 July 2026                  [Page 9]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+7.1.3.  Example Response
+
+   {
+     "success": true,
+     "data": {
+       "protocol": "apertodns",
+       "protocol_version": "1.2.3",
+       "provider": {
+         "name": "Example DDNS",
+         "website": "https://example.com",
+         "documentation": "https://example.com/docs",
+         "support_email": "support@example.com"
+       },
+       "capabilities": {
+         "ipv4": true,
+         "ipv6": true,
+         "auto_ip_detection": true,
+         "bulk_update": true,
+         "webhooks": true,
+         "max_bulk_size": 100
+       },
+       "authentication": {
+         "methods": ["bearer_token", "api_key_header"],
+         "token_format": "{provider}_{environment}_{random}"
+       },
+       "endpoints": {
+         "info": "/.well-known/apertodns/v1/info",
+         "health": "/.well-known/apertodns/v1/health",
+         "update": "/.well-known/apertodns/v1/update",
+         "bulk_update": "/.well-known/apertodns/v1/bulk-update",
+         "status": "/.well-known/apertodns/v1/status/{hostname}",
+         "domains": "/.well-known/apertodns/v1/domains"
+       },
+       "rate_limits": {
+         "update": {"requests": 60, "window_seconds": 60},
+         "bulk_update": {"requests": 10, "window_seconds": 60}
+       },
+       "server_time": "2025-01-01T12:00:00.000Z"
+     }
+   }
+
+7.2.  Health Endpoint (/health)
+
+   GET /.well-known/apertodns/v1/health
+
+   Returns service health status.  This endpoint MUST NOT require
+   authentication and SHOULD be used for monitoring.
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 10]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+7.2.1.  Example Response
+
+   {
+     "success": true,
+     "data": {
+       "status": "healthy",
+       "timestamp": "2025-01-01T12:00:00.000Z"
+     }
+   }
+
+   The status field MUST be one of: "healthy", "degraded", or
+   "unhealthy".
+
+7.3.  Update Endpoint (/update)
+
+   POST /.well-known/apertodns/v1/update
+   Authorization: Bearer {token}
+   Content-Type: application/json
+
+   Updates DNS records for a single hostname.  This endpoint MUST
+   require authentication.
+
+7.3.1.  Request Fields
+
+      +==========+=========+==========+=============================+
+      | Field    | Type    | Required | Description                 |
+      +==========+=========+==========+=============================+
+      | hostname | string  | YES      | Fully qualified domain name |
+      +----------+---------+----------+-----------------------------+
+      | ipv4     | string  | NO       | IPv4 address or "auto"      |
+      +----------+---------+----------+-----------------------------+
+      | ipv6     | string  | NO       | IPv6 address or "auto"      |
+      +----------+---------+----------+-----------------------------+
+      | ttl      | integer | NO       | Time to live in seconds     |
+      |          |         |          | (60-86400)                  |
+      +----------+---------+----------+-----------------------------+
+
+                                  Table 4
+
+   At least one of ipv4 or ipv6 SHOULD be provided.  If neither is
+   provided, implementations SHOULD use auto-detection for IPv4.
+
+   The special value "auto" instructs the server to detect the client's
+   IP address from the incoming request.
+
+
+
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 11]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+7.3.2.  Auto-Detection Limitations
+
+   Auto-detection can only determine the IP address family matching the
+   client's connection.  When a client connects via IPv6:
+
+   *  ipv4: "auto" will fail with error code ipv4_auto_failed
+
+   *  ipv6: "auto" will succeed and return the client's IPv6 address
+
+   Similarly, when a client connects via IPv4:
+
+   *  ipv4: "auto" will succeed and return the client's IPv4 address
+
+   *  ipv6: "auto" will fail with error code ipv6_auto_failed
+
+   For dual-stack updates, clients SHOULD either:
+
+   1.  Provide explicit IP addresses for both families
+
+   2.  Make separate requests over IPv4 and IPv6 connections
+
+   3.  Use auto-detection only for the matching address family
+
+7.3.3.  Example Request
+
+   {
+     "hostname": "home.example.com",
+     "ipv4": "auto",
+     "ttl": 300
+   }
+
+7.3.4.  Example Response
+
+   {
+     "success": true,
+     "data": {
+       "hostname": "home.example.com",
+       "ipv4": "203.0.113.50",
+       "previous_ipv4": "203.0.113.49",
+       "ttl": 300,
+       "changed": true,
+       "timestamp": "2025-01-01T12:00:00.000Z"
+     }
+   }
+
+   The changed field indicates whether the IP address was actually
+   modified (false if the new IP matches the existing record).
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 12]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+7.3.5.  Auto-Detection Failure Response
+
+   When auto-detection fails due to address family mismatch:
+
+   {
+     "success": false,
+     "error": {
+       "code": "ipv4_auto_failed",
+       "message": "Cannot auto-detect IPv4: connection uses IPv6. Specify an explicit IPv4 address."
+     }
+   }
+
+7.4.  Bulk Update Endpoint (/bulk-update)
+
+   POST /.well-known/apertodns/v1/bulk-update
+   Authorization: Bearer {token}
+   Content-Type: application/json
+
+   Updates multiple hostnames in a single request.  Providers
+   advertising bulk_update: true in capabilities MUST implement this
+   endpoint.
+
+7.4.1.  Example Request
+
+   {
+     "updates": [
+       {"hostname": "home.example.com", "ipv4": "auto"},
+       {"hostname": "office.example.com", "ipv4": "203.0.113.51"}
+     ]
+   }
+
+7.4.2.  Example Response
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 13]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+   {
+     "success": true,
+     "data": {
+       "summary": {
+         "total": 2,
+         "successful": 2,
+         "failed": 0
+       },
+       "results": [
+         {
+           "hostname": "home.example.com",
+           "success": true,
+           "ipv4": "203.0.113.50",
+           "changed": true
+         },
+         {
+           "hostname": "office.example.com",
+           "success": true,
+           "ipv4": "203.0.113.51",
+           "changed": true
+         }
+       ]
+     }
+   }
+
+7.5.  Status Endpoint (/status/{hostname})
+
+   GET /.well-known/apertodns/v1/status/{hostname}
+   Authorization: Bearer {token}
+
+   Returns current DNS record status for a hostname.
+
+7.5.1.  Example Response
+
+   {
+     "success": true,
+     "data": {
+       "hostname": "home.example.com",
+       "ipv4": "203.0.113.50",
+       "ipv6": "2001:db8::1",
+       "ttl": 300,
+       "last_updated": "2025-01-01T12:00:00.000Z"
+     }
+   }
+
+7.6.  Domains Endpoint (/domains)
+
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 14]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+   GET /.well-known/apertodns/v1/domains
+   Authorization: Bearer {token}
+
+   Returns list of domains and hostnames available to the authenticated
+   user.
+
+7.6.1.  Example Response
+
+   {
+     "success": true,
+     "data": {
+       "domains": [
+         {
+           "domain": "example.com",
+           "hostnames": ["home.example.com", "office.example.com"]
+         }
+       ]
+     }
+   }
+
+8.  Error Handling
+
+8.1.  HTTP Status Codes
+
+   Implementations MUST use appropriate HTTP status codes as defined in
+   [RFC9110]:
+
+          +========+============================================+
+          | Status | Usage                                      |
+          +========+============================================+
+          | 200    | Successful request                         |
+          +--------+--------------------------------------------+
+          | 400    | Invalid request (bad hostname, invalid IP) |
+          +--------+--------------------------------------------+
+          | 401    | Missing or invalid authentication          |
+          +--------+--------------------------------------------+
+          | 403    | Not authorized for requested resource      |
+          +--------+--------------------------------------------+
+          | 404    | Resource not found                         |
+          +--------+--------------------------------------------+
+          | 429    | Rate limit exceeded                        |
+          +--------+--------------------------------------------+
+          | 500    | Server error                               |
+          +--------+--------------------------------------------+
+
+                                  Table 5
+
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 15]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+8.2.  Error Response Format
+
+   {
+     "success": false,
+     "error": {
+       "code": "error_code",
+       "message": "Human-readable description"
+     }
+   }
+
+8.3.  Standard Error Codes
+
+    +====================+=============+=============================+
+    | Code               | HTTP Status | Description                 |
+    +====================+=============+=============================+
+    | unauthorized       | 401         | Missing authentication      |
+    +--------------------+-------------+-----------------------------+
+    | invalid_token      | 401         | Invalid or expired token    |
+    +--------------------+-------------+-----------------------------+
+    | forbidden          | 403         | Not authorized for resource |
+    +--------------------+-------------+-----------------------------+
+    | not_found          | 404         | Hostname not found          |
+    +--------------------+-------------+-----------------------------+
+    | rate_limited       | 429         | Too many requests           |
+    +--------------------+-------------+-----------------------------+
+    | invalid_hostname   | 400         | Invalid hostname format     |
+    +--------------------+-------------+-----------------------------+
+    | invalid_ip         | 400         | Invalid IP address format   |
+    +--------------------+-------------+-----------------------------+
+    | hostname_not_owned | 403         | User does not own hostname  |
+    +--------------------+-------------+-----------------------------+
+    | ipv4_auto_failed   | 400         | Cannot detect IPv4 from     |
+    |                    |             | IPv6 connection             |
+    +--------------------+-------------+-----------------------------+
+    | ipv6_auto_failed   | 400         | Cannot detect IPv6 from     |
+    |                    |             | IPv4 connection             |
+    +--------------------+-------------+-----------------------------+
+    | validation_error   | 400         | Request validation failed   |
+    +--------------------+-------------+-----------------------------+
+    | invalid_ttl        | 400         | TTL value out of acceptable |
+    |                    |             | range                       |
+    +--------------------+-------------+-----------------------------+
+
+                                 Table 6
+
+
+
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 16]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+8.4.  Rate Limiting Headers
+
+   When rate limiting is applied, responses SHOULD include:
+
+   *  Retry-After: Seconds until rate limit resets
+
+   *  X-RateLimit-Limit: Maximum requests per window
+
+   *  X-RateLimit-Remaining: Remaining requests in window
+
+   *  X-RateLimit-Reset: Unix timestamp when window resets
+
+9.  Legacy Compatibility
+
+   For backward compatibility with existing DDNS clients, providers MAY
+   implement:
+
+   GET /nic/update?hostname={hostname}&myip={ip}
+   Authorization: Basic {credentials}
+
+9.1.  Legacy Response Codes
+
+   Responses MUST be plain text (not JSON):
+
+                  +============+=======================+
+                  | Response   | Meaning               |
+                  +============+=======================+
+                  | good {ip}  | Update successful     |
+                  +------------+-----------------------+
+                  | nochg {ip} | No change needed      |
+                  +------------+-----------------------+
+                  | badauth    | Authentication failed |
+                  +------------+-----------------------+
+                  | notfqdn    | Invalid hostname      |
+                  +------------+-----------------------+
+                  | nohost     | Hostname not found    |
+                  +------------+-----------------------+
+                  | abuse      | Account blocked       |
+                  +------------+-----------------------+
+
+                                 Table 7
+
+   This endpoint is provided for compatibility only.  New
+   implementations SHOULD use the modern JSON endpoints.
+
+
+
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 17]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+10.  Comparison with RFC 2136
+
+   RFC 2136 [RFC2136] defines DNS UPDATE, a protocol for dynamic updates
+   to DNS zones.  The ApertoDNS Protocol differs in several key aspects:
+
+           +===========+=================+====================+
+           | Aspect    | RFC 2136        | ApertoDNS Protocol |
+           +===========+=================+====================+
+           | Transport | DNS (UDP/TCP)   | HTTPS              |
+           +-----------+-----------------+--------------------+
+           | Format    | DNS wire format | JSON               |
+           +-----------+-----------------+--------------------+
+           | Auth      | TSIG/SIG(0)     | Bearer tokens      |
+           +-----------+-----------------+--------------------+
+           | Discovery | None            | /info endpoint     |
+           +-----------+-----------------+--------------------+
+           | IPv6      | Supported       | Native support     |
+           +-----------+-----------------+--------------------+
+           | Bulk ops  | Per-message     | Dedicated endpoint |
+           +-----------+-----------------+--------------------+
+
+                                 Table 8
+
+   The ApertoDNS Protocol is designed for consumer DDNS services where
+   simplicity and HTTP integration are priorities, while RFC 2136 is
+   suited for direct DNS zone manipulation.
+
+11.  Security Considerations
+
+11.1.  Transport Security
+
+   All endpoints MUST be served over HTTPS using TLS 1.2 or higher.
+   Implementations MUST NOT support plaintext HTTP for any protocol
+   endpoint.
+
+   Implementations SHOULD support TLS 1.3 and SHOULD disable older
+   cipher suites known to be weak.
+
+11.2.  Token Security
+
+   *  Tokens MUST be generated using cryptographically secure random
+      number generators (CSPRNG)
+
+   *  Tokens SHOULD have configurable expiration
+
+   *  Providers SHOULD support token revocation
+
+   *  Tokens MUST NOT be logged in server access logs
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 18]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+   *  Tokens MUST NOT appear in URLs or error messages
+
+11.3.  Hostname Validation
+
+   Before processing any update request, implementations MUST verify
+   that the authenticated user owns or has permission to modify the
+   requested hostname.  Failure to validate ownership could allow
+   unauthorized DNS modifications.
+
+11.4.  Rate Limiting
+
+   Providers SHOULD implement rate limiting to prevent:
+
+   *  Brute-force token guessing
+
+   *  Denial of service attacks
+
+   *  Excessive DNS propagation load
+
+   Rate limits SHOULD be advertised in the discovery endpoint and
+   communicated via response headers.
+
+11.5.  DNS Rebinding Prevention
+
+   Implementations MUST validate that IP addresses in update requests
+   are not private, loopback, or link-local addresses unless explicitly
+   configured to allow such addresses.
+
+11.6.  Input Validation
+
+   All user input MUST be validated:
+
+   *  Hostnames MUST conform to DNS naming rules
+
+   *  IP addresses MUST be valid IPv4 or IPv6 format
+
+   *  TTL values MUST be within acceptable ranges
+
+11.7.  Internationalized Domain Names
+
+   When handling Internationalized Domain Names (IDNs), the following
+   requirements apply as specified in [RFC5891]:
+
+   *  Clients SHOULD convert IDN hostnames to their A-label (ASCII
+      Compatible Encoding) form before sending requests
+
+   *  Servers MUST accept hostnames in A-label form
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 19]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+   *  Servers MAY accept hostnames in U-label (Unicode) form and convert
+      them to A-labels internally
+
+   *  Servers MUST store and return hostnames in a consistent form
+
+   For example, a client wishing to update an IDN hostname (U-label
+   form) SHOULD send the request with the A-label form (e.g., "xn--
+   r8jz45g.example.com").
+
+   Implementations that accept U-label input MUST perform IDNA2008
+   validation as specified in [RFC5891] before processing the request.
+
+12.  Privacy Considerations
+
+   This section addresses privacy considerations as recommended by
+   [RFC6973].
+
+12.1.  Data Minimization
+
+   Providers SHOULD minimize the collection and retention of personal
+   data.  Specifically:
+
+   *  IP address history SHOULD have configurable retention periods
+
+   *  Update timestamps MAY be retained for operational purposes
+
+   *  Providers SHOULD document their data retention policies
+
+12.2.  User Control
+
+   Users SHOULD have mechanisms to:
+
+   *  View their stored data
+
+   *  Delete their accounts and associated data
+
+   *  Export their data in a portable format
+
+12.3.  Traffic Analysis
+
+   DDNS updates inherently reveal:
+
+   *  That a user's IP address has changed
+
+   *  The timing of IP address changes
+
+   *  The association between a hostname and IP address
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 20]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+   Providers should be aware that this information could be used to
+   track user behavior or network changes.
+
+12.4.  Encryption
+
+   All communications MUST be encrypted via HTTPS, preventing passive
+   observation of update requests and tokens.
+
+13.  IANA Considerations
+
+13.1.  Well-Known URI Registration
+
+   This document requests registration of the following well-known URI
+   suffix:
+
+   URI Suffix:  apertodns
+
+   Change Controller:  IETF
+
+   Specification Document:  This document
+
+   Related Information:  None
+
+   The well-known URI /.well-known/apertodns/ is used as the base path
+   for all protocol endpoints.
+
+14.  References
+
+14.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC5891]  Klensin, J., "Internationalized Domain Names in
+              Applications (IDNA): Protocol", RFC 5891,
+              DOI 10.17487/RFC5891, August 2010,
+              <https://www.rfc-editor.org/rfc/rfc5891>.
+
+   [RFC6750]  Jones, M. and D. Hardt, "The OAuth 2.0 Authorization
+              Framework: Bearer Token Usage", RFC 6750,
+              DOI 10.17487/RFC6750, October 2012,
+              <https://www.rfc-editor.org/rfc/rfc6750>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 21]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+   [RFC8259]  Bray, T., Ed., "The JavaScript Object Notation (JSON) Data
+              Interchange Format", STD 90, RFC 8259,
+              DOI 10.17487/RFC8259, December 2017,
+              <https://www.rfc-editor.org/rfc/rfc8259>.
+
+   [RFC8615]  Nottingham, M., "Well-Known Uniform Resource Identifiers
+              (URIs)", RFC 8615, DOI 10.17487/RFC8615, May 2019,
+              <https://www.rfc-editor.org/rfc/rfc8615>.
+
+   [RFC9110]  Fielding, R., Ed., Nottingham, M., Ed., and J. Reschke,
+              Ed., "HTTP Semantics", STD 97, RFC 9110,
+              DOI 10.17487/RFC9110, June 2022,
+              <https://www.rfc-editor.org/rfc/rfc9110>.
+
+14.2.  Informative References
+
+   [RFC2136]  Vixie, P., Ed., Thomson, S., Rekhter, Y., and J. Bound,
+              "Dynamic Updates in the Domain Name System (DNS UPDATE)",
+              RFC 2136, DOI 10.17487/RFC2136, April 1997,
+              <https://www.rfc-editor.org/rfc/rfc2136>.
+
+   [RFC6973]  Cooper, A., Tschofenig, H., Aboba, B., Peterson, J.,
+              Morris, J., Hansen, M., and R. Smith, "Privacy
+              Considerations for Internet Protocols", RFC 6973,
+              DOI 10.17487/RFC6973, July 2013,
+              <https://www.rfc-editor.org/rfc/rfc6973>.
+
+Appendix A.  Acknowledgments
+
+   Thanks to the dynamic DNS community for decades of service enabling
+   home users and small businesses to maintain stable hostnames with
+   dynamic IP addresses.
+
+Appendix B.  Implementation Status
+
+   Note to RFC Editor: Please remove this appendix before publication.
+
+   This section records the status of known implementations of the
+   protocol defined by this specification.
+
+B.1.  ApertoDNS
+
+   Organization:  ApertoDNS
+
+   Implementation:  Reference implementation
+
+   Description:  Full protocol support including all endpoints, bulk
+      updates, webhooks, and legacy compatibility
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 22]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+   Level of Maturity:  Production
+
+   Coverage:  Complete
+
+   Licensing:  Proprietary service, open protocol
+
+   Contact:  support@apertodns.com
+
+   URL:  https://apertodns.com
+
+Appendix C.  OpenAPI Specification
+
+   A complete OpenAPI 3.0.3 specification for this protocol is available
+   at:
+
+   https://github.com/apertodns/apertodns-protocol/blob/main/
+   openapi.yaml
+
+   This specification can be used to:
+
+   *  Generate client libraries in various programming languages
+
+   *  Create interactive API documentation
+
+   *  Validate implementations for conformance
+
+Appendix D.  Example Update Flow
+
+   The following illustrates a typical update flow:
+
+   1.  Client discovers provider capabilities: ~~~ GET /.well-
+       known/apertodns/v1/info ~~~
+
+   2.  Client authenticates and requests update: ~~~ POST /.well-
+       known/apertodns/v1/update Authorization: Bearer
+       example_live_abc123 Content-Type: application/json
+
+       {"hostname": "home.example.com", "ipv4": "auto"} ~~~
+
+   3.  Provider validates token and hostname ownership
+
+   4.  Provider updates DNS record
+
+   5.  Provider returns result: ~~~json { "success": true, "data": {
+       "hostname": "home.example.com", "ipv4": "203.0.113.50",
+       "changed": true } } ~~~
+
+   6.  DNS propagates the new record
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 23]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+Appendix E.  Changes from Legacy DDNS Protocols
+
+   For implementers familiar with legacy HTTP-based DDNS protocols
+   (commonly referred to as "dyndns2" in client implementations such as
+   ddclient), key differences include:
+
+   *  JSON responses instead of plain text
+
+   *  Bearer token authentication instead of HTTP Basic
+
+   *  Explicit capability negotiation via /info endpoint
+
+   *  Dedicated endpoints for different operations
+
+   *  Standardized error codes and response formats
+
+   *  Native IPv6 support with separate fields
+
+   *  Bulk update support for multiple hostnames
+
+   *  Well-known URI path for consistent discovery
+
+Appendix F.  Changes from -00
+
+   This section summarizes the changes from version -00 to -01.
+
+F.1.  Editorial Changes
+
+   *  Updated protocol version examples from 1.2.0 to 1.2.3
+
+F.2.  Technical Clarifications
+
+   *  Added "Auto-Detection Limitations" section clarifying that auto-
+      detection only works for the IP address family matching the
+      client's connection type
+
+   *  Added "Auto-Detection Failure Response" example showing the error
+      format when auto-detection fails
+
+F.3.  New Error Codes
+
+   The following error codes were added to the Standard Error Codes
+   table:
+
+   *  ipv4_auto_failed: Cannot detect IPv4 when client connects via IPv6
+
+   *  ipv6_auto_failed: Cannot detect IPv6 when client connects via IPv4
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 24]
+
+Internet-Draft             ApertoDNS Protocol               January 2026
+
+
+   *  validation_error: Generic request validation failure
+
+   *  invalid_ttl: TTL value outside acceptable range (60-86400)
+
+Author's Address
+
+   Andrea Ferro
+   ApertoDNS
+   Italy
+   Email: support@apertodns.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ferro                     Expires 19 July 2026                 [Page 25]
