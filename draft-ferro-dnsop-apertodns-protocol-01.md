@@ -85,7 +85,7 @@ Internet landscape.
 
 ## Protocol Versioning
 
-The protocol version specified in discovery responses (e.g., "1.2.3")
+The protocol version specified in discovery responses (e.g., "1.3.0")
 refers to the semantic version of the protocol specification itself.
 This document represents the first IETF standardization of a protocol
 that has been in production use since 2024. The version number in
@@ -286,7 +286,7 @@ and configuration. This endpoint MUST NOT require authentication.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | protocol | string | YES | MUST be "apertodns" |
-| protocol_version | string | YES | Semantic version (e.g., "1.2.3") |
+| protocol_version | string | YES | Semantic version (e.g., "1.3.0") |
 | provider | object | YES | Provider information |
 | capabilities | object | YES | Supported features |
 | authentication | object | YES | Supported auth methods |
@@ -334,7 +334,7 @@ extensions. Unknown capability fields SHOULD be ignored by clients.
   "success": true,
   "data": {
     "protocol": "apertodns",
-    "protocol_version": "1.2.3",
+    "protocol_version": "1.3.0",
     "provider": {
       "name": "Example DDNS",
       "website": "https://example.com",
@@ -1101,7 +1101,7 @@ This section summarizes changes from draft-ferro-dnsop-apertodns-protocol-00:
   (Update Endpoint) documenting HTTP connection semantics constraints
 - Added `validation_error` and `invalid_ttl` error codes
 - Added example response for auto-detection failure
-- Updated protocol version in examples from "1.2.0" to "1.2.3"
+- Updated protocol version in examples from "1.2.0" to "1.3.0"
 - Added acknowledgment of IETF DNSOP working group
 
 ## Version 1.3.0 Changes (TXT Records)
