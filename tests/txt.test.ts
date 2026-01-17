@@ -8,7 +8,7 @@
  * These tests verify compliance with the ApertoDNS Protocol specification.
  *
  * Environment variables:
- * - APERTODNS_TEST_URL: Base URL of the provider (default: https://api.example.com)
+ * - APERTODNS_TEST_URL: Base URL of the provider (default: https://api.apertodns.com)
  * - APERTODNS_TEST_TOKEN: API token for authenticated tests
  * - APERTODNS_TEST_HOSTNAME: Test hostname owned by the token (default: test.example.com)
  */
