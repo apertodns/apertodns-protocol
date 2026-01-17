@@ -21,7 +21,7 @@ npm install
 Set environment variables before running:
 
 ```bash
-# URL of the API to test (default: https://api.example.com)
+# URL of the API to test (default: https://api.apertodns.com)
 export APERTODNS_TEST_URL="https://api.your-provider.com"
 
 # Token for authenticated tests (optional)
