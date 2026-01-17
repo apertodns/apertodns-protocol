@@ -2,7 +2,7 @@
  * Protocol Compliance Tests - Authentication
  * @author Andrea Ferro <support@apertodns.com>
  *
- * These tests verify authentication compliance with ApertoDNS Protocol v1.2.3
+ * These tests verify authentication compliance with ApertoDNS Protocol v1.3.0
  *
  * Set APERTODNS_TEST_TOKEN environment variable to run authenticated tests.
  */

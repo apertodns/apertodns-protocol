@@ -2,7 +2,7 @@
  * Protocol Compliance Tests - Discovery Endpoint
  * @author Andrea Ferro <support@apertodns.com>
  *
- * These tests verify that an implementation conforms to the ApertoDNS Protocol v1.2.3
+ * These tests verify that an implementation conforms to the ApertoDNS Protocol v1.3.0
  * Response format: { success: boolean, data: {...} } per IETF draft
  */
 
