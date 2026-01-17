@@ -348,7 +348,9 @@ extensions. Unknown capability fields SHOULD be ignored by clients.
       "auto_ip_detection": true,
       "bulk_update": true,
       "webhooks": true,
-      "max_bulk_size": 100
+      "max_bulk_size": 100,
+      "txt_records": true,
+      "txt_max_records": 5
     },
     "authentication": {
       "methods": ["bearer_token", "api_key_header"],
@@ -366,7 +368,7 @@ extensions. Unknown capability fields SHOULD be ignored by clients.
       "update": {"requests": 60, "window_seconds": 60},
       "bulk_update": {"requests": 10, "window_seconds": 60}
     },
-    "server_time": "2025-01-01T12:00:00.000Z"
+    "server_time": "2026-01-01T12:00:00.000Z"
   }
 }
 ~~~
@@ -387,7 +389,7 @@ authentication and SHOULD be used for monitoring.
   "success": true,
   "data": {
     "status": "healthy",
-    "timestamp": "2025-01-01T12:00:00.000Z"
+    "timestamp": "2026-01-01T12:00:00.000Z"
   }
 }
 ~~~
@@ -469,7 +471,7 @@ use one of the following approaches:
     "previous_ipv4": "203.0.113.49",
     "ttl": 300,
     "changed": true,
-    "timestamp": "2025-01-01T12:00:00.000Z"
+    "timestamp": "2026-01-01T12:00:00.000Z"
   }
 }
 ~~~
@@ -562,7 +564,7 @@ Returns current DNS record status for a hostname.
     "ipv4": "203.0.113.50",
     "ipv6": "2001:db8::1",
     "ttl": 300,
-    "last_updated": "2025-01-01T12:00:00.000Z"
+    "last_updated": "2026-01-01T12:00:00.000Z"
   }
 }
 ~~~
