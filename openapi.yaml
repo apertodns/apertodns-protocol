@@ -73,6 +73,8 @@ paths:
                     ipv4: true
                     ipv6: true
                     bulk_update: true
+                    txt_records: true
+                    txt_max_records: 5
                   authentication:
                     methods:
                       - bearer_token
@@ -468,6 +470,10 @@ components:
                 webhooks:
                   type: boolean
                 max_bulk_size:
+                  type: integer
+                txt_records:
+                  type: boolean
+                txt_max_records:
                   type: integer
             authentication:
               type: object
