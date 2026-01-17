@@ -16,6 +16,7 @@ Projects and integrations implementing or using the ApertoDNS Protocol.
 |----------|------|------------|---------|
 | **Node.js/TypeScript** | Client Library | [apertodns-client](https://github.com/apertodns/apertodns-client) | [npm](https://www.npmjs.com/package/apertodns-client) |
 | **Node.js** | Core Package | - | [npm](https://www.npmjs.com/package/apertodns) |
+| **acme.sh** | DNS Plugin | [acme-dns-apertodns](https://github.com/apertodns/acme-dns-apertodns) | dns_apertodns |
 
 ## Protocol Specification
 
