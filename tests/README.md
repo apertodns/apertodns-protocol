@@ -21,11 +21,14 @@ npm install
 Set environment variables before running:
 
 ```bash
-# URL of the API to test (default: https://api.apertodns.com)
+# URL of the API to test (default: https://api.example.com)
 export APERTODNS_TEST_URL="https://api.your-provider.com"
 
 # Token for authenticated tests (optional)
 export APERTODNS_TEST_TOKEN="your_api_key"
+
+# Hostname owned by the token for TXT tests (default: test.example.com)
+export APERTODNS_TEST_HOSTNAME="your-test-domain.example.com"
 ```
 
 **Note:** Token format is **provider-specific** and not part of the protocol. Format: `{provider}_{environment}_{random}`. Examples:
@@ -48,6 +51,7 @@ npm test
 | `discovery.test.ts` | `GET /info` endpoint - IETF response format, security headers |
 | `auth.test.ts` | Authentication: Bearer token, X-API-Key, Basic Auth (legacy) |
 | `update.test.ts` | `POST /update`, `POST /bulk-update`, `GET /nic/update` (DynDNS2) |
+| `txt.test.ts` | TXT record operations for ACME DNS-01 (v1.3.0) |
 
 ## Skipped Tests
 

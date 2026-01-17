@@ -65,6 +65,25 @@ const result = await client.update({
 | 2 | Modern API | Yes | REST endpoints under `/.well-known/apertodns/v1/` |
 | 3 | Extended Features | No | Webhooks, bulk operations, token management |
 
+## Let's Encrypt DNS-01 Validation (v1.3.0)
+
+Providers implementing ApertoDNS Protocol v1.3.0+ support TXT record management for ACME DNS-01 certificate validation:
+
+```bash
+# Using acme.sh (when dns_apertodns plugin is available)
+export APERTODNS_Url="https://api.your-provider.com"
+export APERTODNS_Token="your_api_token"
+acme.sh --issue -d home.example.com --dns dns_apertodns
+
+# Manual API usage
+curl -X POST "https://api.your-provider.com/.well-known/apertodns/v1/txt" \
+  -H "Authorization: Bearer your_token" \
+  -H "Content-Type: application/json" \
+  -d '{"hostname":"_acme-challenge.home.example.com","value":"acme-challenge-token"}'
+```
+
+See [Section 7: TXT Records](./APERTODNS-PROTOCOL.md#7-txt-records) in the protocol specification.
+
 ## Conformance Testing
 
 Run the included test suite to verify your implementation:
