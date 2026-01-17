@@ -21,7 +21,7 @@ Projects and integrations implementing or using the ApertoDNS Protocol.
 
 | Resource | Description | Link |
 |----------|-------------|------|
-| **ApertoDNS Protocol** | Open standard specification v1.2.3 | [GitHub](https://github.com/apertodns/apertodns-protocol) |
+| **ApertoDNS Protocol** | Open standard specification v1.3.0 | [GitHub](https://github.com/apertodns/apertodns-protocol) |
 
 ## Reference Implementation
 
