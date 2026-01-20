@@ -123,7 +123,7 @@ Response includes per-hostname status:
     "results": [
       { "hostname": "host1.example.com", "success": true, "changed": true },
       { "hostname": "host2.example.com", "success": true, "changed": false },
-      { "hostname": "host3.example.com", "success": false, "error": {"code": "hostname_not_found"} }
+      { "hostname": "host3.example.com", "success": false, "error": {"code": "hostname_not_owned"} }
     ]
   }
 }

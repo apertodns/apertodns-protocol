@@ -586,7 +586,7 @@ in {{RFC9110}}:
 | ipv6_auto_failed | 400 | Cannot auto-detect IPv6: client connected via IPv4 |
 | invalid_ttl | 400 | TTL out of valid range (60-86400 seconds) |
 | validation_error | 400 | Request body validation failed |
-| hostname_not_found | 404 | Hostname not registered |
+| hostname_not_owned | 403 | User does not own this hostname |
 | rate_limited | 429 | Too many requests |
 | server_error | 500 | Internal server error |
 

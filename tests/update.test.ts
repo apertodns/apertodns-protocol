@@ -48,9 +48,9 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
 
       // Some implementations validate format first (400), others check ownership first (404)
       // Both behaviors are valid per protocol
-      expect([400, 404]).toContain(response.status);
+      expect([400, 403, 404]).toContain(response.status);
       const data = await response.json();
-      expect(['validation_error', 'invalid_hostname', 'not_found', 'hostname_not_found']).toContain(data.error.code);
+      expect(['validation_error', 'invalid_hostname', 'not_found', 'hostname_not_owned']).toContain(data.error.code);
     });
 
     it.skipIf(!HAS_VALID_TOKEN)('MUST reject private IPv4 addresses', async () => {
