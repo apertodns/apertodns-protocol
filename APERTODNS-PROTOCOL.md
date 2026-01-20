@@ -499,13 +499,39 @@ User-Agent: ddclient/3.9.1
 
 **Authentication:**
 
-```
-Authorization: Basic base64(username:password)
+DynDNS2 uses HTTP Basic Authentication. The credentials format depends on the token type:
 
-Where:
-- username = user email OR username
-- password = API token (NOT account password)
+**1. API Key Token (`apertodns_live_*` or `apertodns_test_*`):**
+
 ```
+Authorization: Basic base64(hostname:token)
+
+Example:
+  curl -u "myhost.example.com:apertodns_live_xxxx" \
+    "https://api.example.com/nic/update?hostname=myhost.example.com&myip=auto"
+```
+
+**2. Domain-Bound Token (legacy):**
+
+```
+Authorization: Basic base64(hostname:token)
+
+Example:
+  curl -u "myhost.example.com:abc123def456" \
+    "https://api.example.com/nic/update?hostname=myhost.example.com&myip=auto"
+```
+
+**3. Credentials (email/password) - if supported by provider:**
+
+```
+Authorization: Basic base64(email:password)
+
+Example:
+  curl -u "user@example.com:secretpassword" \
+    "https://api.example.com/nic/update?hostname=myhost.example.com&myip=auto"
+```
+
+> **Note:** The standard DynDNS2 format uses `hostname:token` for token-based authentication, where the hostname in the Basic Auth username matches the hostname being updated.
 
 **Response Format:** `text/plain; charset=utf-8`
 
