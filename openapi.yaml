@@ -814,7 +814,7 @@ components:
                   message: Invalid or expired token
 
     Forbidden:
-      description: Not authorized for this hostname
+      description: User does not own this hostname
       content:
         application/json:
           schema:
@@ -822,8 +822,8 @@ components:
           example:
             success: false
             error:
-              code: forbidden
-              message: You do not own this hostname
+              code: hostname_not_owned
+              message: User does not own this hostname
 
     NotFound:
       description: Hostname not found

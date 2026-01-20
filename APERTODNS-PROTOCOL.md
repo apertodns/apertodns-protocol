@@ -603,7 +603,7 @@ POST /.well-known/apertodns/v1/bulk-update
     "summary": { "total": 3, "successful": 2, "failed": 1 },
     "results": [
       { "hostname": "host1.example.com", "success": true, "ipv4": "203.0.113.50", "changed": true },
-      { "hostname": "invalid.example.com", "success": false, "error": { "code": "hostname_not_found", "message": "Hostname not found" } },
+      { "hostname": "invalid.example.com", "success": false, "error": { "code": "hostname_not_owned", "message": "User does not own this hostname" } },
       { "hostname": "host3.example.com", "success": true, "ipv4": "203.0.113.50", "changed": false }
     ]
   }
@@ -847,7 +847,7 @@ To prevent abuse:
 | `txt_invalid_name` | 400 | TXT hostname must use allowed prefix |
 | `txt_value_too_long` | 400 | TXT value exceeds 255 characters |
 | `not_found` | 404 | Resource not found |
-| `hostname_not_found` | 404 | Hostname does not exist |
+| `hostname_not_owned` | 403 | User does not own this hostname |
 | `token_not_found` | 404 | Token does not exist |
 | `webhook_not_found` | 404 | Webhook does not exist |
 | `method_not_allowed` | 405 | HTTP method not allowed on endpoint |
@@ -896,7 +896,7 @@ To prevent abuse:
 | `unauthorized` | 401 | Token missing | Add header `Authorization: Bearer YOUR_KEY` |
 | `invalid_token` | 401 | Token expired/invalid | Generate new API key from dashboard |
 | `forbidden` | 403 | Insufficient permissions | Check token scopes match required operation |
-| `hostname_not_found` | 404 | Hostname doesn't exist | Verify hostname in dashboard or create it first |
+| `hostname_not_owned` | 403 | User doesn't own hostname | Verify hostname ownership in dashboard |
 | `not_found` | 404 | Resource not found | Check resource ID exists and you own it |
 | `invalid_ip` | 400 | Private IP (192.168.x, 10.x) | Use public IP or `"ipv4":"auto"` |
 | `invalid_hostname` | 400 | Bad hostname format | Use valid FQDN (e.g., `home.example.com`) |
