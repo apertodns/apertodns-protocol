@@ -5,6 +5,27 @@ All notable changes to the ApertoDNS Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2026-01-20 (IETF draft-02)
+
+### Changed
+
+- **Field Name Standardization** - Align with IETF draft-02 naming conventions
+  - `/update` response: `previous_ipv4`, `previous_ipv6` (deprecated: `ipv4_previous`, `ipv6_previous`)
+  - `/status` response: `updated_at` (deprecated: `last_updated`)
+  - `/domains` response: `is_custom_domain` (deprecated: `is_custom`)
+
+### Backward Compatibility
+
+- Server returns BOTH old and new field names for 6 months (until 2025-07-01)
+- Clients should migrate to new field names gradually
+- Legacy field names will be removed in v1.4.0
+
+### Documentation
+
+- Added IETF Internet-Draft version -02: `draft-ferro-dnsop-apertodns-protocol-02`
+
+---
+
 ## [1.3.0] - 2026-01-17
 
 ### Added
