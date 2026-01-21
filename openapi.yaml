@@ -547,11 +547,13 @@ components:
           example: home.example.com
         ipv4:
           type: string
-          description: IPv4 address (use "auto" for auto-detection)
+          nullable: true
+          description: IPv4 address (use "auto" for auto-detection, null to delete A record)
           example: 203.0.113.50
         ipv6:
           type: string
-          description: IPv6 address (use "auto" for auto-detection)
+          nullable: true
+          description: IPv6 address (use "auto" for auto-detection, null to delete AAAA record)
           example: 2001:db8::1
         ttl:
           type: integer
@@ -572,16 +574,20 @@ components:
               type: string
             ipv4:
               type: string
-              description: Current IPv4 address
+              nullable: true
+              description: Current IPv4 address (null if deleted)
             previous_ipv4:
               type: string
-              description: Previous IPv4 address
+              nullable: true
+              description: Previous IPv4 address (null if was not set)
             ipv6:
               type: string
-              description: Current IPv6 address
+              nullable: true
+              description: Current IPv6 address (null if deleted)
             previous_ipv6:
               type: string
-              description: Previous IPv6 address
+              nullable: true
+              description: Previous IPv6 address (null if was not set)
             ttl:
               type: integer
             changed:
@@ -632,10 +638,12 @@ components:
               type: string
             ipv4:
               type: string
-              description: Current IPv4 address
+              nullable: true
+              description: Current IPv4 address (null if not set)
             ipv6:
               type: string
-              description: Current IPv6 address
+              nullable: true
+              description: Current IPv6 address (null if not set)
             ttl:
               type: integer
             updated_at:
