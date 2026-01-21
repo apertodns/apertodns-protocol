@@ -326,12 +326,12 @@ curl https://api.example.com/.well-known/apertodns/v1/info
   "protocol": "apertodns",
   "protocol_version": "1.3.2",
   "provider": {
-    "name": "ApertoDNS",
-    "website": "https://apertodns.com",
-    "documentation": "https://apertodns.com/docs",
-    "support_email": "support@apertodns.com",
-    "privacy_policy": "https://apertodns.com/privacy",
-    "terms_of_service": "https://apertodns.com/terms"
+    "name": "Example DDNS",
+    "website": "https://example.com",
+    "documentation": "https://example.com/docs",
+    "support_email": "support@example.com",
+    "privacy_policy": "https://example.com/privacy",
+    "terms_of_service": "https://example.com/terms"
   },
   "endpoints": {
     "info": "/.well-known/apertodns/v1/info",
@@ -858,7 +858,7 @@ To prevent abuse:
       "field": "value",
       "additional": "context"
     },
-    "documentation_url": "https://apertodns.com/docs/errors#error_code",
+    "documentation_url": "https://example.com/docs/errors#error_code",
     "support_id": "sup_xxxxxxxx"
   },
   "meta": {
@@ -1057,7 +1057,7 @@ webhooks MUST deliver payloads in this format for interoperability.
 POST /webhook/ip-changed HTTP/1.1
 Host: my-server.com
 Content-Type: application/json
-User-Agent: ApertoDNS-Webhook/1.0
+User-Agent: ExampleDDNS-Webhook/1.0
 X-ApertoDNS-Event: ip_changed
 X-ApertoDNS-Delivery-ID: del_xxxxxxxxxxxxxxxx
 X-ApertoDNS-Timestamp: 1703775000
