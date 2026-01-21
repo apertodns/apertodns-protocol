@@ -154,7 +154,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 │   ├── REST endpoints under /.well-known/apertodns/v1/          │
 │   │   ├── /info, /health (public)                              │
 │   │   ├── /update, /bulk-update (auth)                         │
-│   │   └── /status/{hostname}, /domains (auth)                  │
+│   │   └── /status/{hostname}, /domains, /txt (auth)            │
 │   ├── Bearer Token authentication                               │
 │   ├── JSON request/response                                     │
 │   ├── Structured errors with codes                              │
@@ -275,15 +275,21 @@ implementing this protocol to use their own identifier prefix.
 
 > Token format: `{provider}_{environment}_{random}`. See [Token Format](#51-token-format) section.
 
-### 5.3 Token Permissions
+### 5.3 Authorization Scopes
 
-| Permission | Description |
-|------------|-------------|
-| `update` | Can update IP addresses |
-| `read` | Can read hostname status |
-| `webhooks` | Can manage webhooks |
-| `tokens` | Can manage other tokens |
-| `admin` | Full account access |
+Servers MAY implement scope-based authorization to limit token permissions. When supported, the /info endpoint SHOULD include a `scopes_supported` array in the authentication object.
+
+The following scopes are defined by the protocol:
+
+| Scope | Description |
+|-------|-------------|
+| `dns:update` | Permission to update DNS A/AAAA records |
+| `domains:read` | Permission to read hostname status and list domains |
+| `txt:read` | Permission to read TXT records |
+| `txt:write` | Permission to create/update TXT records |
+| `txt:delete` | Permission to delete TXT records |
+
+Tokens with insufficient scope MUST receive a 403 Forbidden response when attempting operations outside their permitted scope.
 
 ### 5.4 Token Constraints
 
@@ -1253,6 +1259,8 @@ Protocol standard. Providers MAY implement these under their own `/api/` namespa
 
 Providers implementing the ApertoDNS Protocol are NOT required to support these extensions.
 Each provider SHOULD document their extensions separately.
+
+Providers MAY define additional authorization scopes for their extension APIs (e.g., `webhooks`, `tokens`, `admin`). These scopes are provider-specific and not part of the protocol standard.
 
 > **Note**: The `webhooks` capability flag in the `/info` response indicates whether
 > a provider supports webhook notifications (Section 11), but the webhook *management*
