@@ -1,6 +1,6 @@
 /**
  * Protocol Compliance Tests - TXT Record Operations
- * ApertoDNS Protocol v1.3.0
+ * ApertoDNS Protocol v1.3.2
  *
  * @author Andrea Ferro <support@apertodns.com>
  *
@@ -20,7 +20,7 @@ const TOKEN = process.env.APERTODNS_TEST_TOKEN || ''
 const TEST_HOSTNAME = process.env.APERTODNS_TEST_HOSTNAME || 'test.example.com'
 const HAS_VALID_TOKEN = TOKEN.length > 0
 
-describe('TXT Record Operations (v1.3.0)', () => {
+describe('TXT Record Operations (v1.3.2)', () => {
   const uniqueValue = () => `test-txt-${Date.now()}`
 
   describe('POST /.well-known/apertodns/v1/txt', () => {
