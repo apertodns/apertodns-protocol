@@ -1,0 +1,37 @@
+name: Test Suite Validation
+
+on:
+  push:
+    paths:
+      - 'tests/**'
+  pull_request:
+    paths:
+      - 'tests/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: tests
+        run: npm ci
+
+      - name: Start mock server
+        working-directory: tests
+        run: |
+          node mock-server.cjs &
+          sleep 2
+
+      - name: Run tests against mock
+        working-directory: tests
+        env:
+          APERTODNS_TEST_URL: 'http://localhost:3333'
+          APERTODNS_TEST_TOKEN: 'test_token_123'
+          APERTODNS_TEST_HOSTNAME: 'test.example.com'
+        run: npm test
