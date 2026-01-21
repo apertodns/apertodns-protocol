@@ -347,13 +347,9 @@ curl https://api.example.com/.well-known/apertodns/v1/info
     "ipv4": true,
     "ipv6": true,
     "auto_ip_detection": true,
-    "custom_ttl": true,
-    "ttl_range": { "min": 60, "max": 86400, "default": 300 },
-    "wildcards": true,
     "webhooks": true,
     "bulk_update": true,
     "max_bulk_size": 100,
-    "max_hostnames_per_account": -1,
     "txt_records": true,
     "txt_max_records": 5
   },
@@ -365,8 +361,6 @@ curl https://api.example.com/.well-known/apertodns/v1/info
   "authentication": {
     "methods": ["bearer_token", "api_key_header", "basic_auth_legacy"],
     "token_format": "{provider}_{environment}_{random}",
-    "token_header": "Authorization: Bearer {token}",
-    "api_key_header": "X-API-Key: {token}",
     "scopes_supported": ["dns:update", "domains:read", "txt:read", "txt:write", "txt:delete"]
   },
   "server_time": "2025-01-01T12:00:00.000Z"
