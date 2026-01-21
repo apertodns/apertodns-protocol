@@ -238,6 +238,56 @@ diff mock-results.txt your-results.txt
 npm test -- --reporter=verbose
 ```
 
+## CI Integration
+
+Add conformance tests to your CI pipeline:
+
+### GitHub Actions
+```yaml
+# .github/workflows/apertodns-conformance.yml
+name: ApertoDNS Conformance
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run ApertoDNS conformance tests
+        run: |
+          git clone --depth 1 https://github.com/apertodns/apertodns-protocol.git
+          cd apertodns-protocol/tests
+          npm ci
+          npm test
+        env:
+          APERTODNS_TEST_URL: ${{ secrets.API_URL }}
+          APERTODNS_TEST_TOKEN: ${{ secrets.API_TOKEN }}
+          APERTODNS_TEST_HOSTNAME: ${{ secrets.TEST_HOSTNAME }}
+```
+
+### GitLab CI
+```yaml
+conformance:
+  image: node:20
+  script:
+    - git clone --depth 1 https://github.com/apertodns/apertodns-protocol.git
+    - cd apertodns-protocol/tests && npm ci && npm test
+  variables:
+    APERTODNS_TEST_URL: $API_URL
+    APERTODNS_TEST_TOKEN: $API_TOKEN
+```
+
+### Required Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `API_URL` | Your API endpoint (e.g., `https://api.yourprovider.com`) |
+| `API_TOKEN` | Valid API token for authenticated tests |
+| `TEST_HOSTNAME` | Hostname owned by the token (for TXT tests) |
+
 ## License
 
 MIT
