@@ -121,24 +121,46 @@ function isValidIpv4(ip) {
   });
 }
 
-// Helper: Check if IP is private
-function isPrivateIp(ip) {
+// Helper: Check if IPv4 is private (RFC 1918 + special ranges)
+function isPrivateIPv4(ip) {
   if (ip === 'auto') return false;
   const parts = ip.split('.').map(Number);
-  // 10.x.x.x
+  // 10.x.x.x (RFC 1918)
   if (parts[0] === 10) return true;
-  // 172.16.x.x - 172.31.x.x
+  // 172.16.x.x - 172.31.x.x (RFC 1918)
   if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
-  // 192.168.x.x
+  // 192.168.x.x (RFC 1918)
   if (parts[0] === 192 && parts[1] === 168) return true;
-  // 127.x.x.x
+  // 127.x.x.x (loopback)
   if (parts[0] === 127) return true;
+  // 169.254.x.x (link-local)
+  if (parts[0] === 169 && parts[1] === 254) return true;
+  // 0.x.x.x ("this" network)
+  if (parts[0] === 0) return true;
+  return false;
+}
+
+// Helper: Check if IPv6 is private/reserved (Section 10.2)
+function isPrivateIPv6(ip) {
+  if (ip === 'auto' || ip === null || ip === undefined) return false;
+  const normalized = ip.toLowerCase();
+  // ::1 (loopback)
+  if (normalized === '::1') return true;
+  // :: (unspecified)
+  if (normalized === '::') return true;
+  // fe80::/10 (link-local)
+  if (normalized.startsWith('fe8') || normalized.startsWith('fe9') ||
+      normalized.startsWith('fea') || normalized.startsWith('feb')) return true;
+  // fc00::/7 (ULA - fd00::/8 and fc00::/8)
+  if (normalized.startsWith('fc') || normalized.startsWith('fd')) return true;
+  // ff00::/8 (multicast)
+  if (normalized.startsWith('ff')) return true;
   return false;
 }
 
 // Initialize test domain
 domains.set('test.example.com', {
-  ipv4: '93.184.216.34',
+  ipv4: '203.0.113.50',
   ipv6: null,
   ttl: 300,
   updated_at: new Date().toISOString()
@@ -240,19 +262,29 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
-    // Check IP
-    const ipv4 = body.ipv4 || body.ip;
-    if (ipv4 && ipv4 !== 'auto') {
+    // Check IPv4 (skip validation if null - means delete)
+    const ipv4 = body.ipv4 === null ? null : (body.ipv4 || body.ip);
+    if (ipv4 && ipv4 !== 'auto' && ipv4 !== null) {
       if (!isValidIpv4(ipv4)) {
         return json(res, 400, {
           success: false,
           error: { code: 'invalid_ip', message: 'Invalid IPv4 address' }
         });
       }
-      if (isPrivateIp(ipv4)) {
+      if (isPrivateIPv4(ipv4)) {
         return json(res, 400, {
           success: false,
           error: { code: 'invalid_ip', message: 'Private IP addresses not allowed' }
+        });
+      }
+    }
+
+    // Check IPv6 (skip validation if null - means delete)
+    if (body.ipv6 && body.ipv6 !== 'auto' && body.ipv6 !== null) {
+      if (isPrivateIPv6(body.ipv6)) {
+        return json(res, 400, {
+          success: false,
+          error: { code: 'invalid_ip', message: 'Private IPv6 addresses not allowed' }
         });
       }
     }
@@ -266,14 +298,40 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
-    // Resolve auto IP
+    // Resolve auto IP (only if not null)
     const resolvedIpv4 = ipv4 === 'auto' ? getClientIp(req) : ipv4;
-    const resolvedIpv6 = body.ipv6 === 'auto' ? null : body.ipv6; // Mock: no IPv6 auto-detect
+    const resolvedIpv6 = body.ipv6 === 'auto' ? null : body.ipv6;
+
+    // Get existing record for previous values
+    const existing = domains.get(body.hostname) || { ipv4: null, ipv6: null };
+    const previousIpv4 = existing.ipv4;
+    const previousIpv6 = existing.ipv6;
+
+    // Semantics: null = delete record, undefined = keep existing, value = update
+    let newIpv4, newIpv6;
+
+    if (body.ipv4 === null) {
+      newIpv4 = null;  // Explicit deletion
+    } else if (resolvedIpv4 !== undefined) {
+      newIpv4 = resolvedIpv4;  // Update with new value
+    } else {
+      newIpv4 = previousIpv4;  // Keep existing (field omitted)
+    }
+
+    if (body.ipv6 === null) {
+      newIpv6 = null;  // Explicit deletion
+    } else if (resolvedIpv6 !== undefined) {
+      newIpv6 = resolvedIpv6;  // Update with new value
+    } else {
+      newIpv6 = previousIpv6;  // Keep existing (field omitted)
+    }
+
+    const changed = newIpv4 !== previousIpv4 || newIpv6 !== previousIpv6;
 
     // Update domain
     domains.set(body.hostname, {
-      ipv4: resolvedIpv4 || domains.get(body.hostname)?.ipv4,
-      ipv6: resolvedIpv6 || domains.get(body.hostname)?.ipv6,
+      ipv4: newIpv4,
+      ipv6: newIpv6,
       ttl,
       updated_at: new Date().toISOString()
     });
@@ -282,9 +340,12 @@ const server = http.createServer(async (req, res) => {
       success: true,
       data: {
         hostname: body.hostname,
-        ipv4: resolvedIpv4,
-        ipv6: resolvedIpv6,
+        ipv4: newIpv4,
+        ipv6: newIpv6,
+        previous_ipv4: previousIpv4,
+        previous_ipv6: previousIpv6,
         ttl,
+        changed,
         updated_at: new Date().toISOString()
       }
     });
