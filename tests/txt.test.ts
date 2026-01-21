@@ -21,7 +21,9 @@ const TEST_HOSTNAME = process.env.APERTODNS_TEST_HOSTNAME || 'test.example.com'
 const HAS_VALID_TOKEN = TOKEN.length > 0
 
 describe('TXT Record Operations (v1.3.2)', () => {
-  const uniqueValue = () => `test-txt-${Date.now()}`
+  // Use counter + timestamp to ensure uniqueness even in same millisecond
+  let counter = 0
+  const uniqueValue = () => `test-txt-${Date.now()}-${++counter}`
 
   describe('POST /.well-known/apertodns/v1/txt', () => {
     it.skipIf(!HAS_VALID_TOKEN)('should create TXT record', async () => {
