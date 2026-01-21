@@ -1,6 +1,6 @@
-# ApertoDNS Protocol Specification v1.3.0
+# ApertoDNS Protocol Specification v1.3.2
 
-**Version:** 1.3.0
+**Version:** 1.3.2
 **Status:** Stable
 **Author:** Andrea Ferro <support@apertodns.com>
 **Last Updated:** 2026-01-17
@@ -135,7 +135,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                  ApertoDNS Protocol v1.3.0                      │
+│                  ApertoDNS Protocol v1.3.2                      │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │   LAYER 0: Transport Security (REQUIRED)                        │
@@ -190,7 +190,8 @@ MODERN ENDPOINTS:
 ├── update                         # Single host update (POST)
 ├── bulk-update                    # Multiple hosts (POST)
 ├── status/{hostname}              # Check status (GET)
-└── domains                        # List user domains (GET)
+├── domains                        # List user domains (GET)
+└── txt                            # TXT record management (POST/DELETE/GET)
 
 LEGACY ENDPOINT:
 /nic/update                        # DynDNS2 compatible (GET)
@@ -317,7 +318,7 @@ curl https://api.example.com/.well-known/apertodns/v1/info
 ```json
 {
   "protocol": "apertodns",
-  "protocol_version": "1.3.0",
+  "protocol_version": "1.3.2",
   "provider": {
     "name": "ApertoDNS",
     "website": "https://apertodns.com",
@@ -327,11 +328,13 @@ curl https://api.example.com/.well-known/apertodns/v1/info
     "terms_of_service": "https://apertodns.com/terms"
   },
   "endpoints": {
+    "info": "/.well-known/apertodns/v1/info",
+    "health": "/.well-known/apertodns/v1/health",
     "update": "/.well-known/apertodns/v1/update",
     "bulk_update": "/.well-known/apertodns/v1/bulk-update",
     "status": "/.well-known/apertodns/v1/status/{hostname}",
     "domains": "/.well-known/apertodns/v1/domains",
-    "health": "/.well-known/apertodns/v1/health",
+    "txt": "/.well-known/apertodns/v1/txt",
     "legacy_dyndns2": "/nic/update"
   },
   "capabilities": {
@@ -344,7 +347,9 @@ curl https://api.example.com/.well-known/apertodns/v1/info
     "webhooks": true,
     "bulk_update": true,
     "max_bulk_size": 100,
-    "max_hostnames_per_account": -1
+    "max_hostnames_per_account": -1,
+    "txt_records": true,
+    "txt_max_records": 5
   },
   "rate_limits": {
     "update": { "requests": 60, "window_seconds": 60 },
@@ -355,7 +360,8 @@ curl https://api.example.com/.well-known/apertodns/v1/info
     "methods": ["bearer_token", "api_key_header", "basic_auth_legacy"],
     "token_format": "{provider}_{environment}_{random}",
     "token_header": "Authorization: Bearer {token}",
-    "api_key_header": "X-API-Key: {token}"
+    "api_key_header": "X-API-Key: {token}",
+    "scopes_supported": ["dns:update", "domains:read", "txt:read", "txt:write", "txt:delete"]
   },
   "server_time": "2025-01-01T12:00:00.000Z"
 }
@@ -432,8 +438,8 @@ For reliable dual-stack updates, use explicit IP addresses for both families or 
     "hostname": "home.example.com",
     "ipv4": "203.0.113.50",
     "ipv6": "2001:db8::1",
-    "ipv4_previous": "203.0.113.49",
-    "ipv6_previous": null,
+    "previous_ipv4": "203.0.113.49",
+    "previous_ipv6": null,
     "ttl": 300,
     "changed": true,
     "propagation_estimate_seconds": 60,
@@ -455,8 +461,8 @@ For reliable dual-stack updates, use explicit IP addresses for both families or 
     "hostname": "home.example.com",
     "ipv4": "203.0.113.50",
     "ipv6": "2001:db8::1",
-    "ipv4_previous": "203.0.113.50",
-    "ipv6_previous": "2001:db8::1",
+    "previous_ipv4": "203.0.113.50",
+    "previous_ipv6": "2001:db8::1",
     "ttl": 300,
     "changed": false,
     "updated_at": "2024-12-28T15:25:00.000Z"
@@ -627,11 +633,43 @@ GET /.well-known/apertodns/v1/status/{hostname}
     "ipv6": "2001:db8::1",
     "ttl": 300,
     "is_active": true,
-    "last_update": "2025-01-01T12:00:00.000Z",
+    "updated_at": "2025-01-01T12:00:00.000Z",
     "update_count_24h": 5,
     "update_count_total": 1250,
     "created_at": "2024-01-15T10:00:00.000Z"
   }
+}
+```
+
+### 6.6 Domains Endpoint
+
+```
+GET /.well-known/apertodns/v1/domains
+```
+
+**Response 200 OK:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "hostname": "home.example.com",
+      "ipv4": "203.0.113.50",
+      "ipv6": "2001:db8::1",
+      "ttl": 300,
+      "updated_at": "2025-01-01T12:00:00.000Z",
+      "created_at": "2024-01-15T10:00:00.000Z"
+    },
+    {
+      "hostname": "office.example.com",
+      "ipv4": "203.0.113.51",
+      "ipv6": null,
+      "ttl": 300,
+      "updated_at": "2025-01-01T11:30:00.000Z",
+      "created_at": "2024-02-20T14:00:00.000Z"
+    }
+  ]
 }
 ```
 
@@ -903,7 +941,7 @@ To prevent abuse:
 | `invalid_ttl` | 400 | TTL out of range | Use TTL between 60 and 86400 seconds |
 | `invalid_json` | 400 | Malformed JSON body | Check JSON syntax, quotes, brackets |
 | `rate_limited` | 429 | Too many requests | Wait 60 seconds (max 60 req/min for updates) |
-| `bulk_limit_exceeded` | 400 | Too many hosts in bulk | Max 10 hostnames per bulk request |
+| `bulk_limit_exceeded` | 400 | Too many hosts in bulk | Max 100 hostnames per bulk request |
 | `method_not_allowed` | 405 | Wrong HTTP method | Check endpoint docs for correct method |
 | `server_error` | 500 | Internal error | Retry later, contact support if persists |
 
@@ -931,6 +969,8 @@ Retry-After: 45
 | `GET /info` | 120/min | Per IP |
 | `GET /health` | 120/min | Per IP |
 | `/nic/update` | 60/min | Per IP |
+| `POST /txt` | 30/min | Per token |
+| `DELETE /txt` | 30/min | Per token |
 
 ### 9.3 Rate Limited Response
 
@@ -1026,10 +1066,10 @@ X-ApertoDNS-Signature: sha256=xxxxxxxxxxxxxxxxxxxxxx
   "webhook_id": "wh_xxxxxxxxxxxxxxxx",
   "data": {
     "hostname": "home.example.com",
-    "ipv4_previous": "203.0.113.49",
-    "ipv4_current": "203.0.113.50",
-    "ipv6_previous": null,
-    "ipv6_current": "2001:db8::1",
+    "previous_ipv4": "203.0.113.49",
+    "ipv4": "203.0.113.50",
+    "previous_ipv6": null,
+    "ipv6": "2001:db8::1",
     "ttl": 300
   }
 }
@@ -1215,7 +1255,7 @@ Providers implementing the ApertoDNS Protocol are NOT required to support these 
 Each provider SHOULD document their extensions separately.
 
 > **Note**: The `webhooks` capability flag in the `/info` response indicates whether
-> a provider supports webhook notifications (Section 10), but the webhook *management*
+> a provider supports webhook notifications (Section 11), but the webhook *management*
 > API is implementation-specific and should be documented separately by each provider.
 
 ---
@@ -1227,6 +1267,10 @@ Each provider SHOULD document their extensions separately.
 - RFC 4033-4035 - DNS Security Extensions (DNSSEC)
 - RFC 6749 - OAuth 2.0 Authorization Framework
 - RFC 8446 - TLS 1.3
+- RFC 8615 - Well-Known URIs
+- RFC 8259 - JSON
+- RFC 6750 - Bearer Token Usage
+- RFC 8555 - ACME (Automatic Certificate Management Environment)
 - DynDNS2 Protocol Specification
 
 ---
@@ -1235,6 +1279,7 @@ Each provider SHOULD document their extensions separately.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.3.2 | 2026-01-21 | Aligned field naming (`previous_ipv4`, `updated_at`), added `scopes_supported`, added missing endpoints to /info |
 | 1.3.0 | 2026-01-17 | Added TXT record support for ACME DNS-01 challenges |
 | 1.2.3 | 2026-01-15 | Added `ipv4_auto_failed` error code, documented auto-detection limitations |
 | 1.2.2 | 2026-01-02 | Moved management endpoints to provider extensions |
