@@ -2,7 +2,7 @@
  * Protocol Compliance Tests - Discovery Endpoint
  * @author Andrea Ferro <support@apertodns.com>
  *
- * These tests verify that an implementation conforms to the ApertoDNS Protocol v1.3.0
+ * These tests verify that an implementation conforms to the ApertoDNS Protocol v1.3.2
  * Response format: { success: boolean, data: {...} } per IETF draft
  */
 
@@ -99,8 +99,31 @@ describe('Discovery Endpoint (/.well-known/apertodns/v1/info)', () => {
       expect(auth).toBeDefined();
       expect(auth.methods).toBeDefined();
       expect(Array.isArray(auth.methods)).toBe(true);
-      // token_format describes the pattern, not a fixed prefix
-      expect(auth.token_format || auth.token_header).toBeDefined();
+      expect(auth.token_format).toBeDefined();
+      expect(auth.scopes_supported).toBeDefined();
+      expect(Array.isArray(auth.scopes_supported)).toBe(true);
+    });
+
+    it('MUST include scopes_supported array in authentication', async () => {
+      const data = await fetchInfo();
+      const auth = data.authentication as Record<string, unknown>;
+      expect(auth.scopes_supported).toBeDefined();
+      expect(Array.isArray(auth.scopes_supported)).toBe(true);
+      const scopes = auth.scopes_supported as string[];
+      expect(scopes).toContain('dns:update');
+      expect(scopes).toContain('domains:read');
+    });
+
+    it('SHOULD include privacy_policy and terms_of_service in provider', async () => {
+      const data = await fetchInfo();
+      const provider = data.provider as Record<string, unknown>;
+      // These are OPTIONAL per protocol spec
+      if (provider.privacy_policy) {
+        expect(typeof provider.privacy_policy).toBe('string');
+      }
+      if (provider.terms_of_service) {
+        expect(typeof provider.terms_of_service).toBe('string');
+      }
     });
 
     it('MUST include server_time in ISO 8601 format', async () => {
@@ -126,23 +149,6 @@ describe('Discovery Endpoint (/.well-known/apertodns/v1/info)', () => {
     });
   });
 
-  describe('TTL Range', () => {
-    it('SHOULD include ttl_range in capabilities if supported', async () => {
-      const data = await fetchInfo();
-      const capabilities = data.capabilities as Record<string, unknown>;
-
-      if (capabilities && capabilities.ttl_range) {
-        const ttlRange = capabilities.ttl_range as Record<string, number>;
-        expect(ttlRange.min).toBeGreaterThanOrEqual(60);
-        expect(ttlRange.max).toBeLessThanOrEqual(86400);
-        expect(ttlRange.default).toBeGreaterThanOrEqual(ttlRange.min);
-        expect(ttlRange.default).toBeLessThanOrEqual(ttlRange.max);
-      } else {
-        // ttl_range is optional
-        expect(true).toBe(true);
-      }
-    });
-  });
 });
 
 describe('Security Headers', () => {
