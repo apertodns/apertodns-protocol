@@ -356,3 +356,183 @@ describe('Bulk Update Endpoint (POST /.well-known/apertodns/v1/bulk-update)', ()
     });
   });
 });
+
+// =============================================================================
+// Record Deletion via null (IETF Protocol Requirement)
+// =============================================================================
+describe('Record Deletion via null', () => {
+  describe('IPv4 Deletion', () => {
+    it.skipIf(!HAS_VALID_TOKEN)('should delete A record when ipv4 is explicitly null', async () => {
+      // First ensure there's an IPv4 to delete
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TEST_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hostname: TEST_HOSTNAME,
+          ipv4: 'auto'
+        })
+      });
+
+      // Now delete it with null
+      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TEST_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hostname: TEST_HOSTNAME,
+          ipv4: null
+        })
+      });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.success).toBe(true);
+      expect(data.data.ipv4).toBeNull();
+      expect(data.data.changed).toBe(true);
+    });
+
+    it.skipIf(!HAS_VALID_TOKEN)('should preserve IPv6 when only IPv4 is deleted', async () => {
+      // Set both IPv4 and IPv6
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TEST_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hostname: TEST_HOSTNAME,
+          ipv4: '203.0.113.50',
+          ipv6: '2001:db8::1'
+        })
+      });
+
+      // Delete only IPv4
+      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TEST_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hostname: TEST_HOSTNAME,
+          ipv4: null
+        })
+      });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.data.ipv4).toBeNull();
+      // IPv6 should be preserved (not affected)
+      expect(data.data.ipv6).toBe('2001:db8::1');
+    });
+  });
+
+  describe('IPv6 Deletion', () => {
+    it.skipIf(!HAS_VALID_TOKEN)('should delete AAAA record when ipv6 is explicitly null', async () => {
+      // First ensure there's an IPv6 to delete
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TEST_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hostname: TEST_HOSTNAME,
+          ipv6: '2001:db8::1'
+        })
+      });
+
+      // Now delete it with null
+      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TEST_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hostname: TEST_HOSTNAME,
+          ipv6: null
+        })
+      });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data.success).toBe(true);
+      expect(data.data.ipv6).toBeNull();
+      expect(data.data.changed).toBe(true);
+    });
+  });
+
+  describe('Field Omission Semantics', () => {
+    it.skipIf(!HAS_VALID_TOKEN)('should preserve existing value when field is omitted', async () => {
+      // Set an IPv4
+      await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TEST_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hostname: TEST_HOSTNAME,
+          ipv4: '203.0.113.50'
+        })
+      });
+
+      // Update with only TTL change (ipv4 omitted = keep existing)
+      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TEST_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hostname: TEST_HOSTNAME,
+          ttl: 600
+        })
+      });
+
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      // IPv4 should be preserved since it was omitted
+      expect(data.data.ipv4).toBe('203.0.113.50');
+    });
+  });
+});
+
+// =============================================================================
+// IPv6 Private Range Rejection (Section 10.2)
+// =============================================================================
+describe('IPv6 Private Range Rejection', () => {
+  const privateIPv6Cases = [
+    { ip: '::1', name: 'loopback' },
+    { ip: 'fe80::1', name: 'link-local' },
+    { ip: 'fd00::1', name: 'ULA (Unique Local Address)' },
+    { ip: 'ff02::1', name: 'multicast' }
+  ];
+
+  privateIPv6Cases.forEach(({ ip, name }) => {
+    it.skipIf(!HAS_VALID_TOKEN)(`MUST reject ${name} IPv6 address (${ip})`, async () => {
+      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/update`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TEST_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hostname: TEST_HOSTNAME,
+          ipv6: ip
+        })
+      });
+
+      expect(response.status).toBe(400);
+      const data = await response.json();
+      expect(data.success).toBe(false);
+      expect(data.error.code).toBe('invalid_ip');
+    });
+  });
+});
