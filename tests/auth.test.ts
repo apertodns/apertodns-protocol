@@ -2,21 +2,23 @@
  * Protocol Compliance Tests - Authentication
  * @author Andrea Ferro <support@apertodns.com>
  *
- * These tests verify authentication compliance with ApertoDNS Protocol v1.3.0
+ * These tests verify authentication compliance with ApertoDNS Protocol v1.3.2
  *
  * Set APERTODNS_TEST_TOKEN environment variable to run authenticated tests.
+ * Set APERTODNS_TEST_HOSTNAME for a hostname you own (default: test.apertodns.com).
  */
 
 import { describe, it, expect } from 'vitest';
 
 const BASE_URL = process.env.APERTODNS_TEST_URL || 'https://api.apertodns.com';
 const TEST_TOKEN = process.env.APERTODNS_TEST_TOKEN || '';
+const TEST_HOSTNAME = process.env.APERTODNS_TEST_HOSTNAME || 'test.apertodns.com';
 const HAS_VALID_TOKEN = TEST_TOKEN.length > 0;
 
 describe('Authentication - Bearer Token', () => {
   describe('Valid Token', () => {
     it.skipIf(!HAS_VALID_TOKEN)('MUST accept Bearer token in Authorization header', async () => {
-      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/status/test.apertodns.com`, {
+      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/status/${TEST_HOSTNAME}`, {
         headers: {
           'Authorization': `Bearer ${TEST_TOKEN}`
         }
@@ -35,7 +37,7 @@ describe('Authentication - Bearer Token', () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname: 'test.apertodns.com',
+          hostname: TEST_HOSTNAME,
           ipv4: 'auto'
         })
       });
@@ -50,7 +52,7 @@ describe('Authentication - Bearer Token', () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname: 'test.apertodns.com',
+          hostname: TEST_HOSTNAME,
           ipv4: 'auto'
         })
       });
@@ -71,7 +73,7 @@ describe('Authentication - Bearer Token', () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname: 'test.apertodns.com',
+          hostname: TEST_HOSTNAME,
           ipv4: 'auto'
         })
       });
@@ -87,7 +89,7 @@ describe('Authentication - Bearer Token', () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname: 'test.apertodns.com',
+          hostname: TEST_HOSTNAME,
           ipv4: 'auto'
         })
       });
@@ -100,7 +102,7 @@ describe('Authentication - Bearer Token', () => {
 describe('Authentication - API Key Header', () => {
   describe('X-API-Key Header', () => {
     it.skipIf(!HAS_VALID_TOKEN)('MAY accept token via X-API-Key header', async () => {
-      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/status/test.apertodns.com`, {
+      const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/status/${TEST_HOSTNAME}`, {
         headers: {
           'X-API-Key': TEST_TOKEN
         }
@@ -118,7 +120,7 @@ describe('Authentication - Basic Auth (Legacy)', () => {
     it.skipIf(!HAS_VALID_TOKEN)('MUST accept Basic Auth for legacy endpoint', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
-      const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com&myip=auto`, {
+      const response = await fetch(`${BASE_URL}/nic/update?hostname=${TEST_HOSTNAME}&myip=auto`, {
         headers: {
           'Authorization': `Basic ${credentials}`
         }
@@ -137,7 +139,7 @@ describe('Authentication - Basic Auth (Legacy)', () => {
     it('MUST return badauth for invalid credentials', async () => {
       const credentials = Buffer.from('user:invalid_token').toString('base64');
 
-      const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com&myip=auto`, {
+      const response = await fetch(`${BASE_URL}/nic/update?hostname=${TEST_HOSTNAME}&myip=auto`, {
         headers: {
           'Authorization': `Basic ${credentials}`
         }

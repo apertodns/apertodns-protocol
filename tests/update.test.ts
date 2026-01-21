@@ -2,15 +2,17 @@
  * Protocol Compliance Tests - Update Endpoint
  * @author Andrea Ferro <support@apertodns.com>
  *
- * These tests verify update endpoint compliance with ApertoDNS Protocol v1.3.0
+ * These tests verify update endpoint compliance with ApertoDNS Protocol v1.3.2
  *
  * Set APERTODNS_TEST_TOKEN environment variable to run authenticated tests.
+ * Set APERTODNS_TEST_HOSTNAME for a hostname you own (default: test.apertodns.com).
  */
 
 import { describe, it, expect } from 'vitest';
 
 const BASE_URL = process.env.APERTODNS_TEST_URL || 'https://api.apertodns.com';
 const TEST_TOKEN = process.env.APERTODNS_TEST_TOKEN || '';
+const TEST_HOSTNAME = process.env.APERTODNS_TEST_HOSTNAME || 'test.apertodns.com';
 const HAS_VALID_TOKEN = TEST_TOKEN.length > 0;
 
 describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () => {
@@ -61,7 +63,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname: 'test.apertodns.com',
+          hostname: TEST_HOSTNAME,
           ipv4: '192.168.1.1'
         })
       });
@@ -79,7 +81,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname: 'test.apertodns.com',
+          hostname: TEST_HOSTNAME,
           ipv4: 'auto',
           ttl: 30
         })
@@ -98,7 +100,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname: 'test.apertodns.com',
+          hostname: TEST_HOSTNAME,
           ipv4: 'auto',
           ttl: 100000
         })
@@ -118,7 +120,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname: 'test.apertodns.com',
+          hostname: TEST_HOSTNAME,
           ipv4: 'auto'
         })
       });
@@ -133,7 +135,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname: 'test.apertodns.com',
+          hostname: TEST_HOSTNAME,
           ipv4: 'auto'
         })
       });
@@ -153,7 +155,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname: 'test.apertodns.com',
+          hostname: TEST_HOSTNAME,
           ipv4: 'auto'
         })
       });
@@ -173,7 +175,7 @@ describe('Modern Update Endpoint (POST /.well-known/apertodns/v1/update)', () =>
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          hostname: 'test.apertodns.com',
+          hostname: TEST_HOSTNAME,
           ipv6: 'auto'
         })
       });
@@ -191,7 +193,7 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
     it.skipIf(!HAS_VALID_TOKEN)('MUST always return HTTP 200', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
-      const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com&myip=auto`, {
+      const response = await fetch(`${BASE_URL}/nic/update?hostname=${TEST_HOSTNAME}&myip=auto`, {
         headers: {
           'Authorization': `Basic ${credentials}`
         }
@@ -206,7 +208,7 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
     it.skipIf(!HAS_VALID_TOKEN)('MUST return text/plain content type', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
-      const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com&myip=auto`, {
+      const response = await fetch(`${BASE_URL}/nic/update?hostname=${TEST_HOSTNAME}&myip=auto`, {
         headers: {
           'Authorization': `Basic ${credentials}`
         }
@@ -218,7 +220,7 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
     it.skipIf(!HAS_VALID_TOKEN)('MUST return valid DynDNS2 response codes', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
-      const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com&myip=auto`, {
+      const response = await fetch(`${BASE_URL}/nic/update?hostname=${TEST_HOSTNAME}&myip=auto`, {
         headers: {
           'Authorization': `Basic ${credentials}`
         }
@@ -245,7 +247,7 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
     it.skipIf(!HAS_VALID_TOKEN)('MUST support hostname parameter', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
-      const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com`, {
+      const response = await fetch(`${BASE_URL}/nic/update?hostname=${TEST_HOSTNAME}`, {
         headers: {
           'Authorization': `Basic ${credentials}`
         }
@@ -258,7 +260,7 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
     it.skipIf(!HAS_VALID_TOKEN)('SHOULD support myip parameter', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
-      const response = await fetch(`${BASE_URL}/nic/update?hostname=test.apertodns.com&myip=203.0.114.1`, {
+      const response = await fetch(`${BASE_URL}/nic/update?hostname=${TEST_HOSTNAME}&myip=203.0.114.1`, {
         headers: {
           'Authorization': `Basic ${credentials}`
         }
