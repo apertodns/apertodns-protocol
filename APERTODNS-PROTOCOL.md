@@ -1,6 +1,6 @@
-# ApertoDNS Protocol Specification v1.3.2
+# ApertoDNS Protocol Specification v1.4.0
 
-**Version:** 1.3.2
+**Version:** 1.4.0
 **Status:** Stable
 **Author:** Andrea Ferro <support@apertodns.com>
 **Last Updated:** 2026-01-17
@@ -135,7 +135,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                  ApertoDNS Protocol v1.3.2                      │
+│                  ApertoDNS Protocol v1.4.0                      │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │   LAYER 0: Transport Security (REQUIRED)                        │
@@ -324,7 +324,7 @@ curl https://api.example.com/.well-known/apertodns/v1/info
 ```json
 {
   "protocol": "apertodns",
-  "protocol_version": "1.3.2",
+  "protocol_version": "1.4.0",
   "provider": {
     "name": "Example DDNS",
     "website": "https://example.com",
@@ -1281,6 +1281,7 @@ Providers MAY define additional authorization scopes for their extension APIs (e
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.4.0 | 2026-01-22 | Unified field naming (`previous_ipv4`, `previous_ipv6`, `updated_at`), IETF draft-03 alignment, RFC 5737/3849 IP examples |
 | 1.3.2 | 2026-01-21 | Aligned field naming (`previous_ipv4`, `updated_at`), added `scopes_supported`, added missing endpoints to /info |
 | 1.3.0 | 2026-01-17 | Added TXT record support for ACME DNS-01 challenges |
 | 1.2.3 | 2026-01-15 | Added `ipv4_auto_failed` error code, documented auto-detection limitations |

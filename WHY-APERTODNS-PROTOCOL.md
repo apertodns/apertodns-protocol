@@ -13,7 +13,7 @@ The DynDNS2 protocol, introduced in the late 1990s, became the de facto standard
 **Request Format:**
 
 ```
-GET /nic/update?hostname=example.dyndns.org&myip=1.2.3.4 HTTP/1.0
+GET /nic/update?hostname=example.dyndns.org&myip=203.0.113.1 HTTP/1.0
 Host: members.dyndns.org
 Authorization: Basic base64(username:password)
 User-Agent: Company - Device - Version
@@ -22,8 +22,8 @@ User-Agent: Company - Device - Version
 **Response Format:** Plain text, single line
 
 ```
-good 1.2.3.4
-nochg 1.2.3.4
+good 203.0.113.1
+nochg 203.0.113.1
 nohost
 badauth
 abuse
@@ -41,7 +41,7 @@ Source: [Dyn Developer Documentation](https://help.dyn.com/remote-access-api/)
 DynDNS2 responses are plain text with no structure:
 
 ```
-good 1.2.3.4
+good 203.0.113.1
 ```
 
 **Problems:**
@@ -57,8 +57,8 @@ good 1.2.3.4
   "success": true,
   "data": {
     "hostname": "home.example.com",
-    "ipv4": "1.2.3.4",
-    "ipv4_previous": "1.2.3.3",
+    "ipv4": "203.0.113.1",
+    "previous_ipv4": "203.0.113.3",
     "ttl": 300,
     "changed": true,
     "updated_at": "2025-01-01T12:00:00.000Z"
@@ -92,7 +92,7 @@ Both address families are first-class citizens in the protocol.
 DynDNS2 supports multiple hostnames via comma separation:
 
 ```
-GET /nic/update?hostname=host1.example.com,host2.example.com&myip=1.2.3.4
+GET /nic/update?hostname=host1.example.com,host2.example.com&myip=203.0.113.1
 ```
 
 **Problems:**
@@ -106,8 +106,8 @@ GET /nic/update?hostname=host1.example.com,host2.example.com&myip=1.2.3.4
 ```json
 {
   "updates": [
-    { "hostname": "host1.example.com", "ipv4": "1.2.3.4", "ttl": 300 },
-    { "hostname": "host2.example.com", "ipv4": "5.6.7.8", "ttl": 600 },
+    { "hostname": "host1.example.com", "ipv4": "203.0.113.1", "ttl": 300 },
+    { "hostname": "host2.example.com", "ipv4": "203.0.113.2", "ttl": 600 },
     { "hostname": "host3.example.com", "ipv6": "2001:db8::1" }
   ]
 }
@@ -143,8 +143,8 @@ Webhook support with HMAC-SHA256 signed payloads:
   "timestamp": "2025-01-01T12:00:00.000Z",
   "data": {
     "hostname": "home.example.com",
-    "ipv4_previous": "1.2.3.3",
-    "ipv4_current": "1.2.3.4"
+    "previous_ipv4": "203.0.113.3",
+    "ipv4": "203.0.113.1"
   }
 }
 ```
@@ -189,7 +189,7 @@ Discovery endpoint at `/.well-known/apertodns/v1/info`:
 ```json
 {
   "protocol": "apertodns",
-  "protocol_version": "1.3.0",
+  "protocol_version": "1.4.0",
   "capabilities": {
     "ipv4": true,
     "ipv6": true,
@@ -228,14 +228,14 @@ Discovery endpoint at `/.well-known/apertodns/v1/info`:
 ApertoDNS Protocol maintains full DynDNS2 compatibility:
 
 ```
-GET /nic/update?hostname=home.example.com&myip=1.2.3.4
+GET /nic/update?hostname=home.example.com&myip=203.0.113.1
 Authorization: Basic dXNlcjp0b2tlbg==
 ```
 
 Response:
 
 ```
-good 1.2.3.4
+good 203.0.113.1
 ```
 
 Existing DynDNS2 clients (ddclient, routers, etc.) work without modification.
@@ -297,6 +297,6 @@ The ApertoDNS Protocol is designed for adoption by any DDNS provider:
 
 **Author:** Andrea Ferro <support@apertodns.com>
 
-**Last Updated:** 2026-01-01
+**Last Updated:** 2026-01-22
 
 **License:** MIT
