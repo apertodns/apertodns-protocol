@@ -14,7 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate OpenAPI spec
-        uses: char0n/swagger-editor-validate@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          definition-file: openapi.yaml
+          node-version: '20'
+
+      - name: Validate OpenAPI spec
+        run: |
+          npm install -g swagger-cli
+          swagger-cli validate openapi.yaml
