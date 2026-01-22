@@ -4,9 +4,10 @@
 
 | Version | Supported |
 |---------|-----------|
+| v1.4.x  | ✅ Yes    |
+| v1.3.x  | ✅ Yes    |
 | v1.2.x  | ✅ Yes    |
-| v1.1.x  | ✅ Yes    |
-| < v1.1  | ❌ No     |
+| < v1.2  | ❌ No     |
 
 ## Reporting a Vulnerability
 
@@ -105,8 +106,9 @@ All endpoints implement rate limiting to prevent abuse:
 
 **IP Address:**
 - Must be valid IPv4 or IPv6
-- Must be public (not private/reserved ranges)
-- CGNAT ranges (100.64.0.0/10) rejected
+- Must be globally routable (see Section 10 of protocol spec)
+- 15 IPv4 ranges rejected per RFC 6890
+- 9 IPv6 ranges rejected per RFC 6890
 
 **TTL:**
 - Integer between 60 and 86400
@@ -252,6 +254,6 @@ Cache-Control: no-store, no-cache, must-revalidate, private
 
 ---
 
-**Last Updated:** 2026-01-01
+**Last Updated:** 2026-01-22
 
 **Author:** Andrea Ferro <support@apertodns.com>
