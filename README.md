@@ -65,7 +65,7 @@ const result = await client.update({
 | 2 | Modern API | Yes | REST endpoints under `/.well-known/apertodns/v1/` |
 | 3 | Extended Features | No | Webhooks, bulk operations, token management |
 
-## Let's Encrypt DNS-01 Validation (v1.3.0)
+## Let's Encrypt DNS-01 Validation
 
 Providers implementing ApertoDNS Protocol v1.3.0+ support TXT record management for ACME DNS-01 certificate validation:
 
