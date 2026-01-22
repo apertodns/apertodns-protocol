@@ -1,6 +1,6 @@
 /**
  * Protocol Compliance Tests - TXT Record Operations
- * ApertoDNS Protocol v1.3.2
+ * ApertoDNS Protocol v1.4.0
  *
  * @author Andrea Ferro <support@apertodns.com>
  *
@@ -20,7 +20,7 @@ const TOKEN = process.env.APERTODNS_TEST_TOKEN || ''
 const TEST_HOSTNAME = process.env.APERTODNS_TEST_HOSTNAME || 'test.example.com'
 const HAS_VALID_TOKEN = TOKEN.length > 0
 
-describe('TXT Record Operations (v1.3.2)', () => {
+describe('TXT Record Operations (v1.4.0)', () => {
   // Use counter + timestamp to ensure uniqueness even in same millisecond
   let counter = 0
   const uniqueValue = () => `test-txt-${Date.now()}-${++counter}`

@@ -2,7 +2,7 @@
  * Protocol Compliance Tests - Update Endpoint
  * @author Andrea Ferro <support@apertodns.com>
  *
- * These tests verify update endpoint compliance with ApertoDNS Protocol v1.3.2
+ * These tests verify update endpoint compliance with ApertoDNS Protocol v1.4.0
  *
  * Set APERTODNS_TEST_TOKEN environment variable to run authenticated tests.
  * Set APERTODNS_TEST_HOSTNAME for a hostname you own (default: test.apertodns.com).
