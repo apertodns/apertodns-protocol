@@ -38,10 +38,17 @@ normative:
   RFC8259:
   RFC5891:
   RFC8555:
+  RFC6890:
 
 informative:
   RFC2136:
   RFC6973:
+  RFC1918:
+  RFC4291:
+  RFC5737:
+  RFC3849:
+  RFC2544:
+  RFC6666:
 
 --- abstract
 
@@ -234,7 +241,8 @@ DDNS functionality.
 Protected endpoints require authentication via one of the following
 methods:
 
-1. **Bearer Token** (RECOMMENDED): `Authorization: Bearer {token}`
+1. **Bearer Token** (RECOMMENDED) {{RFC6750}}:
+   `Authorization: Bearer {token}`
 2. **API Key Header**: `X-API-Key: {token}`
 3. **HTTP Basic** (legacy only): `Authorization: Basic {credentials}`
 
@@ -269,6 +277,25 @@ This format enables:
 Tokens MUST be transmitted only in HTTP headers. Tokens MUST NOT
 appear in URLs, query parameters, or request bodies where they
 might be logged.
+
+## Authorization Scopes
+
+Servers MAY implement scope-based authorization to limit token
+permissions. When supported, the /info endpoint SHOULD include a
+`scopes_supported` array in the authentication object.
+
+The following scopes are defined:
+
+| Scope | Description |
+|-------|-------------|
+| dns:update | Permission to update DNS A/AAAA records |
+| domains:read | Permission to list user's domains |
+| txt:read | Permission to read TXT records |
+| txt:write | Permission to create/update TXT records |
+| txt:delete | Permission to delete TXT records |
+
+Tokens with insufficient scope MUST receive a 403 Forbidden response
+when attempting operations outside their permitted scope.
 
 # Endpoints
 
@@ -312,7 +339,7 @@ The capabilities object MAY include the following OPTIONAL fields:
 |-------|------|-------------|
 | webhooks | boolean | Provider-specific webhook support available |
 | txt_records | boolean | TXT record management supported |
-| txt_max_records | integer | Maximum TXT records per hostname (default: 5) |
+| txt_max_records | integer | Max TXT records per hostname (5) |
 
 When `webhooks` is true, the provider offers webhook notifications
 for DNS update events such as IP address changes. The webhook API
@@ -334,12 +361,14 @@ extensions. Unknown capability fields SHOULD be ignored by clients.
   "success": true,
   "data": {
     "protocol": "apertodns",
-    "protocol_version": "1.3.2",
+    "protocol_version": "1.4.0",
     "provider": {
       "name": "Example DDNS",
       "website": "https://example.com",
       "documentation": "https://example.com/docs",
-      "support_email": "support@example.com"
+      "support_email": "support@example.com",
+      "privacy_policy": "https://example.com/privacy",
+      "terms_of_service": "https://example.com/terms"
     },
     "capabilities": {
       "ipv4": true,
@@ -347,11 +376,17 @@ extensions. Unknown capability fields SHOULD be ignored by clients.
       "auto_ip_detection": true,
       "bulk_update": true,
       "webhooks": true,
-      "max_bulk_size": 100
+      "txt_records": true,
+      "max_bulk_size": 100,
+      "txt_max_records": 5
     },
     "authentication": {
       "methods": ["bearer_token", "api_key_header"],
-      "token_format": "{provider}_{environment}_{random}"
+      "token_format": "{provider}_{environment}_{random}",
+      "scopes_supported": [
+        "dns:update", "domains:read",
+        "txt:read", "txt:write", "txt:delete"
+      ]
     },
     "endpoints": {
       "info": "/.well-known/apertodns/v1/info",
@@ -359,13 +394,14 @@ extensions. Unknown capability fields SHOULD be ignored by clients.
       "update": "/.well-known/apertodns/v1/update",
       "bulk_update": "/.well-known/apertodns/v1/bulk-update",
       "status": "/.well-known/apertodns/v1/status/{hostname}",
-      "domains": "/.well-known/apertodns/v1/domains"
+      "domains": "/.well-known/apertodns/v1/domains",
+      "txt": "/.well-known/apertodns/v1/txt"
     },
     "rate_limits": {
       "update": {"requests": 60, "window_seconds": 60},
       "bulk_update": {"requests": 10, "window_seconds": 60}
     },
-    "server_time": "2025-01-01T12:00:00.000Z"
+    "server_time": "2026-01-15T12:00:00.000Z"
   }
 }
 ~~~
@@ -386,7 +422,7 @@ authentication and SHOULD be used for monitoring.
   "success": true,
   "data": {
     "status": "healthy",
-    "timestamp": "2025-01-01T12:00:00.000Z"
+    "timestamp": "2026-01-15T12:00:00.000Z"
   }
 }
 ~~~
@@ -468,13 +504,25 @@ use one of the following approaches:
     "previous_ipv4": "203.0.113.49",
     "ttl": 300,
     "changed": true,
-    "updated_at": "2025-01-01T12:00:00.000Z"
+    "updated_at": "2026-01-15T12:00:00.000Z"
   }
 }
 ~~~
 
 The `changed` field indicates whether the IP address was actually
 modified (false if the new IP matches the existing record).
+
+### Backward Compatibility
+
+For backward compatibility during the transition from legacy field
+names, servers MAY also include the following deprecated fields in
+the response:
+
+- `ipv4_previous`: Alias for `previous_ipv4` (deprecated)
+- `ipv6_previous`: Alias for `previous_ipv6` (deprecated)
+
+Clients SHOULD use `previous_ipv4` and `previous_ipv6`. The deprecated
+field names will be removed in a future protocol version.
 
 ### Auto-Detection Failure Response
 
@@ -485,10 +533,89 @@ When auto-detection fails due to address family mismatch:
   "success": false,
   "error": {
     "code": "ipv4_auto_failed",
-    "message": "Cannot detect IPv4 address: client connected via IPv6"
+    "message": "Cannot detect IPv4: client connected via IPv6"
   }
 }
 ~~~
+
+### Record Deletion via Null Values
+
+Clients MAY delete specific DNS record types by setting the
+corresponding field to `null` in the update request. This enables
+selective removal of A or AAAA records without affecting other
+record types.
+
+The following semantics apply:
+
+| Field Value | Server Action |
+|-------------|---------------|
+| `"203.0.113.1"` | Create or update the record |
+| `"auto"` | Auto-detect and update |
+| `null` | Delete the record |
+| (field omitted) | No change to existing record |
+
+Servers MUST distinguish between an explicit `null` value (delete
+request) and an omitted field (no change requested).
+
+#### Example: Delete IPv6 Record
+
+Request to delete the AAAA record while preserving the A record:
+
+~~~json
+{
+  "hostname": "home.example.com",
+  "ipv6": null
+}
+~~~
+
+Response:
+
+~~~json
+{
+  "success": true,
+  "data": {
+    "hostname": "home.example.com",
+    "ipv4": "203.0.113.50",
+    "ipv6": null,
+    "previous_ipv6": "2001:db8::1",
+    "ttl": 300,
+    "changed": true,
+    "updated_at": "2026-01-21T12:00:00.000Z"
+  }
+}
+~~~
+
+#### Example: Delete IPv4 Record
+
+Request to delete the A record:
+
+~~~json
+{
+  "hostname": "home.example.com",
+  "ipv4": null
+}
+~~~
+
+Response:
+
+~~~json
+{
+  "success": true,
+  "data": {
+    "hostname": "home.example.com",
+    "ipv4": null,
+    "ipv6": "2001:db8::1",
+    "previous_ipv4": "203.0.113.50",
+    "ttl": 300,
+    "changed": true,
+    "updated_at": "2026-01-21T12:00:00.000Z"
+  }
+}
+~~~
+
+When a record is deleted, the corresponding field in the response
+MUST be `null`, and the `previous_*` field MUST contain the value
+that was deleted.
 
 ## Bulk Update Endpoint (/bulk-update)
 
@@ -561,7 +688,7 @@ Returns current DNS record status for a hostname.
     "ipv4": "203.0.113.50",
     "ipv6": "2001:db8::1",
     "ttl": 300,
-    "updated_at": "2025-01-01T12:00:00.000Z"
+    "updated_at": "2026-01-15T12:00:00.000Z"
   }
 }
 ~~~
@@ -588,7 +715,7 @@ array of hostname objects containing full details for each entry.
       "ipv4": "203.0.113.50",
       "ipv6": "2001:db8::1",
       "ttl": 300,
-      "updated_at": "2025-01-01T12:00:00.000Z",
+      "updated_at": "2026-01-15T12:00:00.000Z",
       "created_at": "2024-06-15T08:30:00.000Z"
     },
     {
@@ -596,7 +723,7 @@ array of hostname objects containing full details for each entry.
       "ipv4": "203.0.113.51",
       "ipv6": "2001:db8::2",
       "ttl": 300,
-      "updated_at": "2025-01-01T12:00:00.000Z",
+      "updated_at": "2026-01-15T12:00:00.000Z",
       "created_at": "2024-06-15T08:35:00.000Z"
     }
   ]
@@ -663,7 +790,7 @@ TXT records for the same hostname, up to the provider's limit.
     "value": "gfj9Xq...Rg85nM",
     "ttl": 60,
     "record_count": 1,
-    "timestamp": "2026-01-01T12:00:00.000Z"
+    "timestamp": "2026-01-15T12:00:00.000Z"
   }
 }
 ~~~
@@ -708,7 +835,7 @@ TXT records for the hostname are removed.
     "deleted": true,
     "values_removed": 1,
     "remaining_count": 1,
-    "timestamp": "2026-01-01T12:00:00.000Z"
+    "timestamp": "2026-01-15T12:00:00.000Z"
   }
 }
 ~~~
@@ -843,6 +970,58 @@ The ApertoDNS Protocol is designed for consumer DDNS services
 where simplicity and HTTP integration are priorities, while
 RFC 2136 is suited for direct DNS zone manipulation.
 
+# Concurrency Model
+
+This section describes the behavior when multiple clients attempt
+to update the same hostname concurrently.
+
+## Last-Write-Wins Semantics
+
+The protocol uses a last-write-wins model for concurrent updates.
+When multiple clients update the same hostname:
+
+- The most recent update takes precedence
+- No conflict detection or resolution is performed
+- The `previous_*` fields reflect the value immediately before
+  the current update, regardless of which client set it
+
+## Implications for Clients
+
+Clients operating in environments where multiple devices may update
+the same hostname SHOULD be aware of the following:
+
+1. **Update intervals**: Clients SHOULD implement appropriate
+   update intervals to minimize conflicts
+2. **Change detection**: Clients MAY compare `previous_*` values
+   with expected values to detect concurrent modifications
+3. **Idempotent updates**: When the new IP matches the existing
+   record, `changed` will be `false` regardless of which client
+   originally set the value
+
+## Example Scenario
+
+Consider two clients (A and B) updating the same hostname:
+
+1. Initial state: `ipv4 = "203.0.113.10"`
+2. Client A sends update with `ipv4 = "203.0.113.20"` (succeeds,
+   `previous_ipv4 = "203.0.113.10"`)
+3. Client B sends update with `ipv4 = "203.0.113.30"` (succeeds,
+   `previous_ipv4 = "203.0.113.20"`)
+4. Final state: `ipv4 = "203.0.113.30"`
+
+Client A's update was overwritten by Client B. Neither client
+receives an error, as this is expected behavior under last-write-wins
+semantics.
+
+## Recommendations for Conflict-Sensitive Applications
+
+Applications requiring stronger consistency guarantees SHOULD:
+
+- Use separate hostnames for each client/device
+- Implement application-level coordination outside this protocol
+- Consider using RFC 2136 {{RFC2136}} which supports prerequisite
+  conditions for updates
+
 # Security Considerations
 
 ## Transport Security
@@ -881,11 +1060,64 @@ Providers SHOULD implement rate limiting to prevent:
 Rate limits SHOULD be advertised in the discovery endpoint and
 communicated via response headers.
 
-## DNS Rebinding Prevention
+## IP Address Validation
 
-Implementations MUST validate that IP addresses in update requests
-are not private, loopback, or link-local addresses unless
-explicitly configured to allow such addresses.
+Implementations MUST reject IP addresses that are not globally
+routable. This prevents DNS rebinding attacks and ensures that
+dynamic DNS records point to legitimate public addresses.
+
+### Rejected IPv4 Addresses
+
+The following IPv4 address ranges MUST be rejected per {{RFC6890}}:
+
+| Address Block | Attribute | Reference |
+|---------------|-----------|-----------|
+| 0.0.0.0/8 | "This network" | {{!RFC791}} |
+| 10.0.0.0/8 | Private-Use | {{RFC1918}} |
+| 100.64.0.0/10 | Shared Address Space (CGNAT) | {{!RFC6598}} |
+| 127.0.0.0/8 | Loopback | {{!RFC1122}} |
+| 169.254.0.0/16 | Link-Local | {{!RFC3927}} |
+| 172.16.0.0/12 | Private-Use | {{RFC1918}} |
+| 192.0.0.0/24 | IETF Protocol Assignments | {{RFC6890}} |
+| 192.0.2.0/24 | Documentation (TEST-NET-1) | {{RFC5737}} |
+| 192.168.0.0/16 | Private-Use | {{RFC1918}} |
+| 198.18.0.0/15 | Benchmarking | {{RFC2544}} |
+| 198.51.100.0/24 | Documentation (TEST-NET-2) | {{RFC5737}} |
+| 203.0.113.0/24 | Documentation (TEST-NET-3) | {{RFC5737}} |
+| 224.0.0.0/4 | Multicast | {{!RFC5771}} |
+| 240.0.0.0/4 | Reserved | {{!RFC1112}} |
+| 255.255.255.255/32 | Limited Broadcast | {{!RFC919}} |
+
+### Rejected IPv6 Addresses
+
+The following IPv6 address ranges MUST be rejected per {{RFC6890}}:
+
+| Address Block | Attribute | Reference |
+|---------------|-----------|-----------|
+| ::/128 | Unspecified | {{RFC4291}} |
+| ::1/128 | Loopback | {{RFC4291}} |
+| ::ffff:0:0/96 | IPv4-mapped | {{RFC4291}} |
+| 64:ff9b::/96 | IPv4-IPv6 Translation | {{!RFC6052}} |
+| 100::/64 | Discard-Only | {{RFC6666}} |
+| 2001:db8::/32 | Documentation | {{RFC3849}} |
+| fc00::/7 | Unique Local (ULA) | {{!RFC4193}} |
+| fe80::/10 | Link-Local | {{RFC4291}} |
+| ff00::/8 | Multicast | {{RFC4291}} |
+
+### Implementation Notes
+
+Implementations SHOULD return the `invalid_ip` error code when
+rejecting addresses from these ranges. Implementations MAY log
+rejected addresses for security monitoring purposes.
+
+Note: The documentation ranges (192.0.2.0/24, 198.51.100.0/24,
+203.0.113.0/24 for IPv4 and 2001:db8::/32 for IPv6) are used in
+examples throughout this specification but MUST be rejected in
+production deployments.
+
+Implementations MAY provide configuration options to allow specific
+private ranges for internal deployments, but such configurations
+MUST be explicitly enabled and SHOULD generate warnings.
 
 ## Input Validation
 
@@ -894,7 +1126,7 @@ All user input MUST be validated:
 - Hostnames MUST conform to DNS naming rules
 - IP addresses MUST be valid IPv4 or IPv6 format
 - TTL values MUST be within acceptable ranges
-- TXT values MUST not exceed 255 characters
+- TXT values MUST NOT exceed 255 characters
 
 ## TXT Record Abuse Prevention
 
@@ -925,8 +1157,9 @@ requirements apply as specified in {{RFC5891}}:
   convert them to A-labels internally
 - Servers MUST store and return hostnames in a consistent form
 
-For example, a client wishing to update the hostname "例え.example.com"
-SHOULD send the request with the A-label form "xn--r8jz45g.example.com".
+For example, a client wishing to update an internationalized hostname
+SHOULD send the request with the A-label form
+(e.g., "xn--r8jz45g.example.com" for a Japanese hostname).
 
 Implementations that accept U-label input MUST perform IDNA2008
 validation as specified in {{RFC5891}} before processing the request.
@@ -1102,7 +1335,8 @@ such as ddclient), key differences include:
 
 # Changes from -00
 
-This section summarizes changes from draft-ferro-dnsop-apertodns-protocol-00:
+This section summarizes changes from
+draft-ferro-dnsop-apertodns-protocol-00:
 
 ## Version 1.2.3 Changes
 
@@ -1119,8 +1353,8 @@ This section summarizes changes from draft-ferro-dnsop-apertodns-protocol-00:
 
 - Added TXT record management endpoint (/txt) for ACME DNS-01 challenges
 - Added `txt_records` and `txt_max_records` capability fields
-- Added TXT-related error codes: `txt_not_supported`, `txt_limit_exceeded`,
-  `txt_invalid_name`, `txt_value_too_long`
+- Added TXT-related error codes: `txt_not_supported`,
+  `txt_limit_exceeded`, `txt_invalid_name`, `txt_value_too_long`
 - Added "TXT Record Abuse Prevention" section to Security Considerations
 - Added RFC 8555 (ACME) to normative references
 - Added TXT Record and ACME DNS-01 terminology definitions
@@ -1128,18 +1362,51 @@ This section summarizes changes from draft-ferro-dnsop-apertodns-protocol-00:
 
 # Changes from -01
 
-This section summarizes changes from draft-ferro-dnsop-apertodns-protocol-01:
+This section summarizes changes from
+draft-ferro-dnsop-apertodns-protocol-01:
 
 ## Version 1.3.2 Changes (Response Consistency)
 
 - Standardized timestamp field naming across all endpoints:
   - Renamed `timestamp` to `updated_at` in /update response
   - Renamed `last_updated` to `updated_at` in /status response
-  - This provides consistent naming for timestamp fields across the protocol
-- Changed /domains response structure from grouped domains to flat array:
+  - This provides consistent naming for timestamp fields
+    across the protocol
+- Changed /domains response structure from grouped domains
+  to flat array:
   - Previous: `data.domains[].hostnames[]` (grouped by parent domain)
   - New: `data[]` (flat array of hostname objects with full details)
-  - Each hostname object now includes: hostname, ipv4, ipv6, ttl, updated_at, created_at
+  - Each hostname object now includes: hostname, ipv4, ipv6,
+    ttl, updated_at, created_at
   - This reduces API calls needed to retrieve hostname information
-- Clarified that `timestamp` field remains unchanged for /health and /txt endpoints
-- Clarified that `server_time` field remains unchanged for /info endpoint
+- Clarified that `timestamp` field remains unchanged for /health
+  and /txt endpoints
+- Clarified that `server_time` field remains unchanged
+  for /info endpoint
+
+## Version 1.3.2 Changes (Enhancements)
+
+- Added "Backward Compatibility" subsection to /update endpoint
+  documenting deprecated field aliases (`ipv4_previous`,
+  `ipv6_previous`) for transition from legacy field names
+- Added "Authorization Scopes" section documenting optional scope-based
+  authorization with defined scopes: dns:update, domains:read, txt:read,
+  txt:write, txt:delete
+- Updated example timestamps to 2026
+
+## Version 1.4.0 Changes (Record Deletion and Concurrency)
+
+- Added "Record Deletion via Null Values" subsection to /update endpoint
+  documenting the ability to delete A or AAAA records by setting the
+  corresponding field to `null` in the update request
+- Defined tri-state semantics for ipv4/ipv6 fields:
+  string value (update), `null` (delete), omitted (no change)
+- Added examples for IPv4 and IPv6 record deletion
+- Added "Concurrency Model" section documenting last-write-wins
+  semantics for concurrent updates to the same hostname
+- Added recommendations for conflict-sensitive applications
+- Expanded "IP Address Validation" section with explicit lists of
+  rejected IPv4 (15 ranges) and IPv6 (9 ranges) address blocks
+  per RFC 6890
+- Added RFC 6890 to normative references
+- Updated protocol version to 1.4.0
