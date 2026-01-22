@@ -3,7 +3,6 @@ title: "ApertoDNS Protocol: A Modern Dynamic DNS Update Protocol"
 abbrev: "ApertoDNS Protocol"
 docname: draft-ferro-dnsop-apertodns-protocol-01
 category: std
-submissiontype: IETF
 ipr: trust200902
 area: Operations and Management
 workgroup: DNS Operations
@@ -235,7 +234,7 @@ DDNS functionality.
 Protected endpoints require authentication via one of the following
 methods:
 
-1. **Bearer Token** (RECOMMENDED) [RFC6750]: `Authorization: Bearer {token}`
+1. **Bearer Token** (RECOMMENDED): `Authorization: Bearer {token}`
 2. **API Key Header**: `X-API-Key: {token}`
 3. **HTTP Basic** (legacy only): `Authorization: Basic {credentials}`
 
@@ -348,9 +347,7 @@ extensions. Unknown capability fields SHOULD be ignored by clients.
       "auto_ip_detection": true,
       "bulk_update": true,
       "webhooks": true,
-      "max_bulk_size": 100,
-      "txt_records": true,
-      "txt_max_records": 5
+      "max_bulk_size": 100
     },
     "authentication": {
       "methods": ["bearer_token", "api_key_header"],
@@ -368,7 +365,7 @@ extensions. Unknown capability fields SHOULD be ignored by clients.
       "update": {"requests": 60, "window_seconds": 60},
       "bulk_update": {"requests": 10, "window_seconds": 60}
     },
-    "server_time": "2026-01-01T12:00:00.000Z"
+    "server_time": "2025-01-01T12:00:00.000Z"
   }
 }
 ~~~
@@ -389,7 +386,7 @@ authentication and SHOULD be used for monitoring.
   "success": true,
   "data": {
     "status": "healthy",
-    "timestamp": "2026-01-01T12:00:00.000Z"
+    "timestamp": "2025-01-01T12:00:00.000Z"
   }
 }
 ~~~
@@ -471,7 +468,7 @@ use one of the following approaches:
     "previous_ipv4": "203.0.113.49",
     "ttl": 300,
     "changed": true,
-    "timestamp": "2026-01-01T12:00:00.000Z"
+    "timestamp": "2025-01-01T12:00:00.000Z"
   }
 }
 ~~~
@@ -488,7 +485,7 @@ When auto-detection fails due to address family mismatch:
   "success": false,
   "error": {
     "code": "ipv4_auto_failed",
-    "message": "Cannot auto-detect IPv4 from IPv6 connection"
+    "message": "Cannot detect IPv4 address: client connected via IPv6"
   }
 }
 ~~~
@@ -564,7 +561,7 @@ Returns current DNS record status for a hostname.
     "ipv4": "203.0.113.50",
     "ipv6": "2001:db8::1",
     "ttl": 300,
-    "last_updated": "2026-01-01T12:00:00.000Z"
+    "last_updated": "2025-01-01T12:00:00.000Z"
   }
 }
 ~~~
@@ -772,8 +769,8 @@ in {{RFC9110}}:
 | invalid_hostname | 400 | Invalid hostname format |
 | invalid_ip | 400 | Invalid IP address format |
 | hostname_not_owned | 403 | User does not own hostname |
-| ipv4_auto_failed | 400 | Cannot auto-detect IPv4 from IPv6 connection |
-| ipv6_auto_failed | 400 | Cannot auto-detect IPv6 from IPv4 connection |
+| ipv4_auto_failed | 400 | Cannot detect IPv4 from IPv6 connection |
+| ipv6_auto_failed | 400 | Cannot detect IPv6 from IPv4 connection |
 | validation_error | 400 | Request validation failed |
 | invalid_ttl | 400 | TTL value out of acceptable range |
 | txt_not_supported | 400 | Provider does not support TXT records |
@@ -886,7 +883,7 @@ All user input MUST be validated:
 - Hostnames MUST conform to DNS naming rules
 - IP addresses MUST be valid IPv4 or IPv6 format
 - TTL values MUST be within acceptable ranges
-- TXT values MUST NOT exceed 255 characters
+- TXT values MUST not exceed 255 characters
 
 ## TXT Record Abuse Prevention
 
