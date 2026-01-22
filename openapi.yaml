@@ -9,7 +9,7 @@ info:
     **Reference Implementation:** [ApertoDNS](https://apertodns.com)
 
     **Protocol Specification:** [GitHub](https://github.com/apertodns/apertodns-protocol)
-  version: 1.3.2
+  version: 1.4.0
   contact:
     name: ApertoDNS
     url: https://apertodns.com
@@ -65,7 +65,7 @@ paths:
                 success: true
                 data:
                   protocol: apertodns
-                  protocol_version: "1.3.2"
+                  protocol_version: "1.4.0"
                   provider:
                     name: Example DDNS
                     website: https://example.com
@@ -456,7 +456,7 @@ components:
               example: apertodns
             protocol_version:
               type: string
-              example: "1.3.2"
+              example: "1.4.0"
             provider:
               type: object
               properties:
