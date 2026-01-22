@@ -92,7 +92,7 @@ npm test
 
 | Feature | Supported |
 |---------|-----------|
-| Protocol version | v1.3.2 |
+| Protocol version | v1.4.0 |
 | Bearer authentication | ✅ |
 | X-API-Key authentication | ✅ |
 | Basic Auth (legacy) | ✅ |
