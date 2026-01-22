@@ -5,6 +5,44 @@ All notable changes to the ApertoDNS Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-01-22 (IETF draft-03)
+
+### Added
+
+- **Null Deletion Semantics** - Delete DNS records by setting field to `null` (IETF Section 4.2.1)
+  - `ipv4: null` → Delete A record (keep AAAA if present)
+  - `ipv6: null` → Delete AAAA record (keep A if present)
+  - Field omission = skip (no change to existing record)
+  - Explicit value = upsert (create or update record)
+
+- **New Capabilities**
+  - `null_deletion` - Boolean indicating null deletion support
+  - `concurrent_update` - Boolean indicating concurrent A/AAAA update support
+
+- **New Error Codes**
+  - `record_not_found` (404) - Cannot delete record that doesn't exist
+  - `invalid_null_deletion` (400) - Null deletion not supported or malformed
+
+- **Concurrency Model Documentation**
+  - Clear semantics for simultaneous IPv4/IPv6 updates
+  - Atomic operations per record type (A or AAAA)
+  - Non-atomic across record types (A and AAAA independent)
+
+### Changed
+
+- **Field Name Cleanup** - Removed deprecated field names from v1.3.2
+  - Removed: `ipv4_previous`, `ipv6_previous` (use `previous_ipv4`, `previous_ipv6`)
+  - Removed: `last_updated` (use `updated_at`)
+  - Removed: `is_custom` (use `is_custom_domain`)
+
+### Security
+
+- Null deletion requires same authentication as record creation
+- Audit logging for all deletion operations
+- IPv6 validation rejects link-local, ULA, multicast, and loopback addresses (IETF Section 10.2)
+
+---
+
 ## [1.3.2] - 2026-01-20 (IETF draft-02)
 
 ### Changed
@@ -18,7 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Server returns BOTH old and new field names for 6 months (until 2025-07-01)
 - Clients should migrate to new field names gradually
-- Legacy field names will be removed in v1.4.0
+- Legacy field names removed in v1.4.0
 
 ### Documentation
 
