@@ -1,0 +1,123 @@
+publiccodeYmlVersion: “0.4”
+
+name: ApertoDNS Protocol
+applicationSuite: ApertoDNS
+url: “https://github.com/apertodns/apertodns-protocol”
+landingURL: “https://apertodns.com”
+
+isBasedOn:
+
+- “https://datatracker.ietf.org/doc/draft-ferro-dnsop-apertodns-protocol/”
+
+softwareVersion: “1.4.0”
+releaseDate: “2026-01-22”
+
+platforms:
+
+- web
+
+categories:
+
+- network-management
+- it-security
+
+developmentStatus: stable
+
+softwareType: “standalone/other”
+
+description:
+en:
+localisedName: ApertoDNS Protocol
+shortDescription: >
+Open standard for vendor-agnostic Dynamic DNS interoperability.
+longDescription: >
+The ApertoDNS Protocol is an open specification for Dynamic DNS (DDNS)
+interoperability. It defines a modern RESTful API using JSON over HTTPS,
+replacing the fragmented ecosystem of 30+ undocumented, proprietary DDNS
+protocols that have dominated the market for over 25 years. The protocol
+provides native IPv4 and IPv6 support, bulk hostname updates, TXT record
+management for ACME DNS-01 certificate validation, fine-grained
+authorization scopes, record deletion semantics, a documented concurrency
+model, and comprehensive IP address validation against all RFC 6890
+reserved ranges. Backward compatibility with legacy DynDNS2 clients is
+maintained. The specification is published as IETF Internet-Draft
+(draft-ferro-dnsop-apertodns-protocol-02) and is under active review
+within the IETF DNSOP working group.
+documentation: “https://apertodns.com/docs”
+apiDocumentation: “https://github.com/apertodns/apertodns-protocol/blob/main/APERTODNS-PROTOCOL-v1.0.md”
+features:
+- Modern JSON REST API
+- Full DynDNS2 backward compatibility
+- Native IPv4 and IPv6 dual-stack support
+- TXT record management for ACME DNS-01 challenges
+- Bulk hostname updates
+- Authorization scopes
+- Record deletion via null values
+- Last-write-wins concurrency model
+- IP validation against all RFC 6890 reserved ranges
+- Webhook notifications
+- GDPR compliance endpoints
+it:
+localisedName: Protocollo ApertoDNS
+shortDescription: >
+Standard aperto per l’interoperabilità del DNS dinamico.
+longDescription: >
+Il Protocollo ApertoDNS è una specifica aperta per l’interoperabilità
+del DNS dinamico (DDNS). Definisce un’API RESTful moderna basata su JSON
+over HTTPS, sostituendo l’ecosistema frammentato di oltre 30 protocolli
+DDNS proprietari e non documentati che hanno dominato il mercato per
+oltre 25 anni. Il protocollo fornisce supporto nativo IPv4 e IPv6,
+aggiornamenti hostname in blocco, gestione record TXT per la validazione
+certificati ACME DNS-01, ambiti di autorizzazione granulari, semantica
+di cancellazione record, un modello di concorrenza documentato e
+validazione completa degli indirizzi IP contro tutti gli intervalli
+riservati RFC 6890. La compatibilità con i client legacy DynDNS2 è
+mantenuta. La specifica è pubblicata come IETF Internet-Draft
+(draft-ferro-dnsop-apertodns-protocol-02) ed è in fase di revisione
+attiva nel gruppo di lavoro IETF DNSOP.
+documentation: “https://apertodns.com/docs”
+apiDocumentation: “https://github.com/apertodns/apertodns-protocol/blob/main/APERTODNS-PROTOCOL-v1.0.md”
+features:
+- API REST JSON moderna
+- Piena compatibilità DynDNS2
+- Supporto nativo IPv4 e IPv6 dual-stack
+- Gestione record TXT per ACME DNS-01
+- Aggiornamenti hostname in blocco
+- Ambiti di autorizzazione
+- Cancellazione record tramite valori null
+- Modello di concorrenza last-write-wins
+- Validazione IP contro tutti gli intervalli RFC 6890
+- Notifiche webhook
+- Endpoint conformi al GDPR
+
+legal:
+license: “MIT”
+mainCopyrightOwner: “Andrea Ferro”
+repoOwner: “Andrea Ferro”
+
+maintenance:
+type: “internal”
+contacts:
+- name: “Andrea Ferro”
+email: “support@apertodns.com”
+affiliation: “ApertoDNS”
+
+localisation:
+localisationReady: true
+availableLanguages:
+- en
+- it
+
+dependsOn:
+open:
+- name: Node.js
+versionMin: “18”
+optional: false
+
+intendedAudience:
+scope:
+- infrastructure
+- science-and-technology
+countries:
+- it
+- eu
