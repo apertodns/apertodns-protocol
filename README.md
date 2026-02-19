@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Protocol Version](https://img.shields.io/badge/Protocol-v1.4.0-green.svg)](./APERTODNS-PROTOCOL.md)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18704491.svg)](https://doi.org/10.5281/zenodo.18704491)
 
 Open standard for Dynamic DNS services.
 
