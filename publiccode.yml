@@ -5,10 +5,6 @@ applicationSuite: ApertoDNS
 url: “https://github.com/apertodns/apertodns-protocol”
 landingURL: “https://apertodns.com”
 
-isBasedOn:
-
-- “https://datatracker.ietf.org/doc/draft-ferro-dnsop-apertodns-protocol/”
-
 softwareVersion: “1.4.0”
 releaseDate: “2026-01-22”
 
@@ -24,6 +20,13 @@ categories:
 developmentStatus: stable
 
 softwareType: “standalone/other”
+
+intendedAudience:
+scope:
+- infrastructures
+- science-and-technology
+countries:
+- it
 
 description:
 en:
@@ -113,11 +116,3 @@ open:
 - name: Node.js
 versionMin: “18”
 optional: false
-
-intendedAudience:
-scope:
-- infrastructure
-- science-and-technology
-countries:
-- it
-- eu
