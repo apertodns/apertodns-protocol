@@ -289,7 +289,7 @@ The ApertoDNS Protocol is designed for adoption by any DDNS provider:
 ## References
 
 1. Dyn Remote Access API - https://help.dyn.com/remote-access-api/
-2. RFC 2617 - HTTP Authentication: Basic and Digest Access Authentication
+2. RFC 7617 - The 'Basic' HTTP Authentication Scheme (obsoletes RFC 2617)
 3. RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3
 4. RFC 6749 - The OAuth 2.0 Authorization Framework
 

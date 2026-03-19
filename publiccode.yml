@@ -44,10 +44,10 @@ authorization scopes, record deletion semantics, a documented concurrency
 model, and comprehensive IP address validation against all RFC 6890
 reserved ranges. Backward compatibility with legacy DynDNS2 clients is
 maintained. The specification is published as IETF Internet-Draft
-(draft-ferro-dnsop-apertodns-protocol-02) and is under active review
+(draft-ferro-dnsop-apertodns-protocol-03) and is under active review
 within the IETF DNSOP working group.
 documentation: “https://apertodns.com/docs”
-apiDocumentation: “https://github.com/apertodns/apertodns-protocol/blob/main/APERTODNS-PROTOCOL-v1.0.md”
+apiDocumentation: “https://github.com/apertodns/apertodns-protocol/blob/main/APERTODNS-PROTOCOL.md”
 features:
 - Modern JSON REST API
 - Full DynDNS2 backward compatibility
@@ -76,10 +76,10 @@ di cancellazione record, un modello di concorrenza documentato e
 validazione completa degli indirizzi IP contro tutti gli intervalli
 riservati RFC 6890. La compatibilità con i client legacy DynDNS2 è
 mantenuta. La specifica è pubblicata come IETF Internet-Draft
-(draft-ferro-dnsop-apertodns-protocol-02) ed è in fase di revisione
+(draft-ferro-dnsop-apertodns-protocol-03) ed è in fase di revisione
 attiva nel gruppo di lavoro IETF DNSOP.
 documentation: “https://apertodns.com/docs”
-apiDocumentation: “https://github.com/apertodns/apertodns-protocol/blob/main/APERTODNS-PROTOCOL-v1.0.md”
+apiDocumentation: “https://github.com/apertodns/apertodns-protocol/blob/main/APERTODNS-PROTOCOL.md”
 features:
 - API REST JSON moderna
 - Piena compatibilità DynDNS2

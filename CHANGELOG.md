@@ -5,6 +5,31 @@ All notable changes to the ApertoDNS Protocol will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Expanded OpenAPI legacy `/nic/update` documentation (all DynDNS2 response codes, myipv6, comma-separated hostnames)
+- Updated mock server to v1.4.0
+- Fixed conformance tests for strict HTTP 200 DynDNS2 compliance
+
+---
+
+## [1.4.1] - 2026-02-19
+
+### Added
+- `publiccode.yml` for EU Interoperable Europe compliance
+- GPG signed commits across all repositories
+
+### Changed
+- Updated SECURITY.md with current PGP key information
+- Improved error messages for hostname validation
+- Aligned all documentation timestamps
+
+### Security
+- Enabled GPG commit signing for supply chain integrity
+
+---
+
 ## [1.4.0] - 2026-01-22 (IETF draft-03)
 
 ### Added
@@ -54,7 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Backward Compatibility
 
-- Server returns BOTH old and new field names for 6 months (until 2025-07-01)
+- Server returns BOTH old and new field names for 6 months (until 2026-07-20)
 - Clients should migrate to new field names gradually
 - Legacy field names removed in v1.4.0
 
@@ -262,18 +287,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
-
-### Planned for v1.1
-
-- OAuth2 integration
-- DNS-over-HTTPS (DoH) support
-- Multi-region failover
-- Audit log API
-- Team/organization support
-
----
-
 ## Migration Guide
 
 ### From DynDNS2
@@ -307,5 +320,14 @@ curl -X POST "https://api.apertodns.com/.well-known/apertodns/v1/update" \
 
 ---
 
-[1.0.0]: https://github.com/apertodns/protocol/releases/tag/v1.0.0
-[Unreleased]: https://github.com/apertodns/protocol/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/apertodns/apertodns-protocol/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/apertodns/apertodns-protocol/releases/tag/v1.4.1
+[1.4.0]: https://github.com/apertodns/apertodns-protocol/releases/tag/v1.4.0
+[1.3.2]: https://github.com/apertodns/apertodns-protocol/compare/v1.3.0...v1.3.2
+[1.3.0]: https://github.com/apertodns/apertodns-protocol/releases/tag/v1.3.0
+[1.2.3]: https://github.com/apertodns/apertodns-protocol/compare/v1.2.2...v1.2.3
+[1.2.2]: https://github.com/apertodns/apertodns-protocol/compare/v1.2.1...v1.2.2
+[1.2.1]: https://github.com/apertodns/apertodns-protocol/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/apertodns/apertodns-protocol/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/apertodns/apertodns-protocol/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/apertodns/apertodns-protocol/releases/tag/v1.0.0

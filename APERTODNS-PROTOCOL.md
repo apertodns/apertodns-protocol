@@ -3,7 +3,7 @@
 **Version:** 1.4.0
 **Status:** Stable
 **Author:** Andrea Ferro <support@apertodns.com>
-**Last Updated:** 2026-01-17
+**Last Updated:** 2026-03-19
 **License:** MIT
 
 ---
@@ -113,7 +113,7 @@ This document specifies the ApertoDNS Protocol, designed to:
 
 ### 1.3 Conformance
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 (RFC 2119, RFC 8174) when, and only when, they appear in all capitals, as shown here.
 
 ---
 
@@ -551,6 +551,8 @@ Example:
 | `badauth` | Auth failed | Invalid/expired token |
 | `notfqdn` | Invalid hostname | Bad format |
 | `abuse` | Rate limited | Too many requests |
+| `numhost` | Too many hosts | More than 20 comma-separated hostnames |
+| `badagent` | Bad agent | Missing User-Agent or unsupported HTTP method |
 | `dnserr` | DNS error | Propagation problem |
 | `911` | Server error | Internal error |
 
@@ -879,6 +881,7 @@ To prevent abuse:
 | `invalid_hostname` | 400 | Invalid hostname format |
 | `invalid_ip` | 400 | Invalid or private IP |
 | `ipv4_auto_failed` | 400 | Cannot auto-detect IPv4 (connection uses IPv6) |
+| `ipv6_auto_failed` | 400 | Cannot auto-detect IPv6 (connection uses IPv4) |
 | `invalid_ttl` | 400 | TTL out of range |
 | `txt_not_supported` | 400 | Provider does not support TXT records |
 | `txt_limit_exceeded` | 400 | Maximum TXT records per hostname exceeded |
@@ -1303,4 +1306,4 @@ Providers implementing this protocol should:
 
 ---
 
-**Copyright (c) 2025 Andrea Ferro. Licensed under MIT License.**
+**Copyright (c) 2025-2026 Andrea Ferro. Licensed under MIT License.**
