@@ -34,8 +34,10 @@ describe('Discovery Endpoint (/.well-known/apertodns/v1/info)', () => {
     it('SHOULD include Cache-Control header', async () => {
       const response = await fetch(`${BASE_URL}/.well-known/apertodns/v1/info`);
       const cacheControl = response.headers.get('cache-control');
-      // Cache-Control is optional for API responses
-      expect(true).toBe(true);
+      // Cache-Control is SHOULD (optional), verify format if present
+      if (cacheControl) {
+        expect(typeof cacheControl).toBe('string');
+      }
     });
   });
 

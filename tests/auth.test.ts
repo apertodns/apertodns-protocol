@@ -126,14 +126,10 @@ describe('Authentication - Basic Auth (Legacy)', () => {
         }
       });
 
-      // DynDNS2 spec: returns 200 with text response
-      // However, some implementations return 401 for API tokens (require domain-specific tokens)
-      // Both behaviors are valid per protocol
-      expect([200, 401]).toContain(response.status);
-      if (response.status === 200) {
-        const text = await response.text();
-        expect(text).toBeTruthy();
-      }
+      // DynDNS2 spec: all responses return HTTP 200, status in body
+      expect(response.status).toBe(200);
+      const text = await response.text();
+      expect(text).toBeTruthy();
     });
 
     it('MUST return badauth for invalid credentials', async () => {
@@ -145,13 +141,10 @@ describe('Authentication - Basic Auth (Legacy)', () => {
         }
       });
 
-      // DynDNS2 spec: always returns 200, error is in body
-      // However, some implementations return 401 for missing/invalid auth
-      expect([200, 401]).toContain(response.status);
-      if (response.status === 200) {
-        const text = await response.text();
-        expect(text.trim()).toBe('badauth');
-      }
+      // DynDNS2 spec: all responses return HTTP 200, error code in body
+      expect(response.status).toBe(200);
+      const text = await response.text();
+      expect(text.trim()).toBe('badauth');
     });
   });
 });

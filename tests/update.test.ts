@@ -199,10 +199,8 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
         }
       });
 
-      // DynDNS2 spec requires 200 for all responses
-      // However, API tokens may not be valid for Basic Auth (require domain-specific tokens)
-      // 401 is acceptable when using API tokens instead of domain tokens
-      expect([200, 401]).toContain(response.status);
+      // DynDNS2 spec requires HTTP 200 for all responses (error code is in the body)
+      expect(response.status).toBe(200);
     });
 
     it.skipIf(!HAS_VALID_TOKEN)('MUST return text/plain content type', async () => {
@@ -233,7 +231,9 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
         /^nohost$/,                          // nohost
         /^badauth$/,                         // badauth
         /^notfqdn$/,                         // notfqdn
+        /^numhost$/,                         // numhost (>20 hostnames)
         /^abuse$/,                           // abuse
+        /^badagent$/,                        // badagent
         /^dnserr$/,                          // dnserr
         /^911$/,                             // 911
       ];
@@ -253,21 +253,21 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
         }
       });
 
-      // API tokens may not be valid for Basic Auth (require domain-specific tokens)
-      expect([200, 401]).toContain(response.status);
+      // DynDNS2 spec requires HTTP 200 for all responses
+      expect(response.status).toBe(200);
     });
 
     it.skipIf(!HAS_VALID_TOKEN)('SHOULD support myip parameter', async () => {
       const credentials = Buffer.from(`user:${TEST_TOKEN}`).toString('base64');
 
-      const response = await fetch(`${BASE_URL}/nic/update?hostname=${TEST_HOSTNAME}&myip=203.0.114.1`, {
+      const response = await fetch(`${BASE_URL}/nic/update?hostname=${TEST_HOSTNAME}&myip=203.0.113.1`, {
         headers: {
           'Authorization': `Basic ${credentials}`
         }
       });
 
-      // API tokens may not be valid for Basic Auth (require domain-specific tokens)
-      expect([200, 401]).toContain(response.status);
+      // DynDNS2 spec requires HTTP 200 for all responses
+      expect(response.status).toBe(200);
     });
 
     it.skipIf(!HAS_VALID_TOKEN)('SHOULD support comma-separated hostnames', async () => {
@@ -279,8 +279,8 @@ describe('Legacy Update Endpoint (GET /nic/update)', () => {
         }
       });
 
-      // API tokens may not be valid for Basic Auth (require domain-specific tokens)
-      expect([200, 401]).toContain(response.status);
+      // DynDNS2 spec requires HTTP 200 for all responses
+      expect(response.status).toBe(200);
     });
   });
 });

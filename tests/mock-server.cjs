@@ -1,5 +1,5 @@
 /**
- * ApertoDNS Protocol v1.3.2 - Reference Mock Server
+ * ApertoDNS Protocol v1.4.0 - Reference Mock Server
  *
  * This is a minimal in-memory implementation demonstrating protocol conformance.
  * A provider can use this as a reference for implementing the protocol.
@@ -187,7 +187,7 @@ const server = http.createServer(async (req, res) => {
       success: true,
       data: {
         protocol: 'apertodns',
-        protocol_version: '1.3.2',
+        protocol_version: '1.4.0',
         provider: {
           name: 'MockDNS Provider',
           website: 'https://mockdns.example.com',
@@ -599,30 +599,43 @@ const server = http.createServer(async (req, res) => {
       return res.end('badauth');
     }
 
-    const hostname = url.searchParams.get('hostname');
-    if (!hostname) {
+    const hostnameParam = url.searchParams.get('hostname');
+    if (!hostnameParam) {
       res.writeHead(200);
       return res.end('notfqdn');
+    }
+
+    // Support comma-separated hostnames (max 20, standard DynDNS2)
+    const hostnames = hostnameParam.split(',').map(h => h.trim()).filter(h => h.length > 0);
+    if (hostnames.length > 20) {
+      res.writeHead(200);
+      return res.end('numhost');
     }
 
     let myip = url.searchParams.get('myip');
     if (!myip || myip === 'auto') {
       myip = getClientIp(req);
     }
+    const myipv6 = url.searchParams.get('myipv6') || null;
 
-    // Update domain
-    const existing = domains.get(hostname);
-    const isChange = !existing || existing.ipv4 !== myip;
+    // Update each hostname, one response line per hostname
+    const results = [];
+    for (const hostname of hostnames) {
+      const existing = domains.get(hostname);
+      const isChange = !existing || existing.ipv4 !== myip;
 
-    domains.set(hostname, {
-      ipv4: myip,
-      ipv6: null,
-      ttl: 300,
-      updated_at: new Date().toISOString()
-    });
+      domains.set(hostname, {
+        ipv4: myip,
+        ipv6: myipv6 || (existing ? existing.ipv6 : null),
+        ttl: 300,
+        updated_at: new Date().toISOString()
+      });
+
+      results.push(isChange ? `good ${myip}` : `nochg ${myip}`);
+    }
 
     res.writeHead(200);
-    return res.end(isChange ? `good ${myip}` : `nochg ${myip}`);
+    return res.end(results.join('\n'));
   }
 
   // 404 for unknown paths
@@ -634,6 +647,6 @@ const server = http.createServer(async (req, res) => {
 
 const PORT = process.env.PORT || 3333;
 server.listen(PORT, () => {
-  console.log(`ApertoDNS Protocol Mock Server v1.3.2 running on port ${PORT}`);
+  console.log(`ApertoDNS Protocol Mock Server v1.4.0 running on port ${PORT}`);
   console.log(`Test with: APERTODNS_TEST_URL="http://localhost:${PORT}" APERTODNS_TEST_TOKEN="test_token_123" npm test`);
 });
